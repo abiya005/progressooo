@@ -245,6 +245,13 @@
       <input type="text" id="signupUsername" placeholder="Choose a Username" disabled />
       <input type="email" id="signupEmail" placeholder="Your email address" disabled />
       <input type="password" id="signupPassword" placeholder="Create a Password" disabled />
+      <select id="signupRole" disabled style="width: 350px; height: 40px; padding: 0.75rem; margin: 0.5rem 0; border: none; border-radius: 5px; background-color: #ECE2D0;">
+        <option value="">Select Role</option>
+        <option value="student">Student</option>
+        <option value="faculty">Faculty</option>
+      </select>
+      <input type="text" id="signupStudentId" placeholder="Student ID (if student)" disabled style="width: 350px; height: 40px; padding: 0.75rem; margin: 0.5rem 0; border: none; border-radius: 5px; background-color: #ECE2D0;" />
+      <input type="text" id="signupFacultyId" placeholder="Faculty ID (if faculty)" disabled style="width: 350px; height: 40px; padding: 0.75rem; margin: 0.5rem 0; border: none; border-radius: 5px; background-color: #ECE2D0;" />
       <button class="sign-in-btn" onclick="signup()">Create Account</button>
     </div>
   </div>
@@ -253,30 +260,105 @@
 
   <script>
     function enableSignup() {
-      const fields = document.querySelectorAll('.signup-form input');
+      const fields = document.querySelectorAll('.signup-form input, .signup-form select');
       fields.forEach(field => {
         field.disabled = false;
       });
     }
+
+    // Show/hide ID fields based on role selection
+    document.addEventListener('DOMContentLoaded', function() {
+      const roleSelect = document.getElementById('signupRole');
+      const studentIdField = document.getElementById('signupStudentId');
+      const facultyIdField = document.getElementById('signupFacultyId');
+
+      roleSelect.addEventListener('change', function() {
+        if (this.value === 'student') {
+          studentIdField.style.display = 'block';
+          facultyIdField.style.display = 'none';
+          facultyIdField.disabled = true;
+        } else if (this.value === 'faculty') {
+          facultyIdField.style.display = 'block';
+          studentIdField.style.display = 'none';
+          studentIdField.disabled = true;
+        } else {
+          studentIdField.style.display = 'none';
+          facultyIdField.style.display = 'none';
+          studentIdField.disabled = true;
+          facultyIdField.disabled = true;
+        }
+      });
+    });
   </script>
   <script>
 async function signup() {
     const username = document.getElementById("signupUsername").value;
     const email = document.getElementById("signupEmail").value;
     const password = document.getElementById("signupPassword").value;
+    const role = document.getElementById("signupRole").value;
+    const studentId = document.getElementById("signupStudentId").value;
+    const facultyId = document.getElementById("signupFacultyId").value;
 
-    const res = await fetch("http://localhost:5000/signup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, email, password })
-    });
+    if (!username || !email || !password || !role) {
+        alert("Please fill in all required fields");
+        return;
+    }
 
-    alert(await res.text());
+    if (role === 'student' && !studentId) {
+        alert("Please enter your Student ID");
+        return;
+    }
+
+    if (role === 'faculty' && !facultyId) {
+        alert("Please enter your Faculty ID");
+        return;
+    }
+
+    try {
+        console.log("Attempting signup with:", { username, email, role, studentId, facultyId });
+        
+        const res = await fetch("http://localhost:5000/signup", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ 
+                username, 
+                email, 
+                password, 
+                role,
+                studentId: role === 'student' ? studentId : null,
+                facultyId: role === 'faculty' ? facultyId : null
+            })
+        });
+
+        const result = await res.json();
+        console.log("Signup response:", result);
+        
+        if (res.ok) {
+            alert("Account created successfully! You can now login.");
+            // Clear the form
+            document.getElementById("signupUsername").value = "";
+            document.getElementById("signupEmail").value = "";
+            document.getElementById("signupPassword").value = "";
+            document.getElementById("signupRole").value = "";
+            document.getElementById("signupStudentId").value = "";
+            document.getElementById("signupFacultyId").value = "";
+        } else {
+            alert("Error: " + result.message);
+        }
+    } catch (error) {
+        console.error("Signup error:", error);
+        alert("Signup failed. Please check your connection and try again.");
+    }
 }
 
 async function login() {
     const username = document.getElementById("loginUsername").value;
     const password = document.getElementById("loginPassword").value;
+
+    if (!username || !password) {
+        alert("Please enter both username and password");
+        return;
+    }
 
     console.log("Trying to login with:", username, password);
 
@@ -287,17 +369,28 @@ async function login() {
             body: JSON.stringify({ username, password })
         });
 
-        const message = await res.text();
-        console.log("Server response:", message);
+        const result = await res.json();
+        console.log("Server response:", result);
 
-        if (message === "Login successful") {
-            alert("Welcome!");
-            window.location.href = "dashboard.html";
+        if (res.ok && result.message === "Login successful") {
+            // Store user data in localStorage
+            localStorage.setItem('user', JSON.stringify(result.user));
+            console.log("User stored:", result.user);
+            
+            // Redirect based on role
+            if (result.user.role === 'student') {
+                window.location.href = "student-dashboard.html";
+            } else if (result.user.role === 'faculty') {
+                window.location.href = "faculty-dashboard.html";
+            } else {
+                window.location.href = "dashboard.html";
+            }
         } else {
-            alert(message);
+            alert("Error: " + result.message);
         }
     } catch (err) {
         console.error("Login error:", err);
+        alert("Login failed. Please check your connection and try again.");
     }
 }
 

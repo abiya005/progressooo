@@ -1,0 +1,1681 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Progresso - Faculty Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://kit.fontawesome.com/6c52c5d47f.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"/>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            display: flex;
+            min-height: 100vh;
+            background-color: #ebd8d0;
+        }
+
+        .sidebar {
+            width: 250px;
+            background-color: #582c4d;
+            color: white;
+            padding: 20px 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            position: fixed;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            padding: 0 20px 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .logo span {
+            color: #ebd8d0;
+        }
+
+        .nav-menu {
+            flex: 1;
+            padding: 20px 0;
+        }
+
+        .nav-item {
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .nav-item:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-item i {
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
+        }
+
+        .nav-item.active {
+            background-color: #ebd8d0;
+            color: #582c4d;
+        }
+
+        .user-profile {
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .user-profile img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 10px;
+            background-color: #fff;
+            object-fit: cover;
+        }
+
+        .user-info h4 {
+            font-size: 14px;
+            margin-bottom: 2px;
+        }
+
+        .user-info p {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        .main-content {
+            flex: 1;
+            margin-left: 250px;
+            padding: 20px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .search-bar {
+            flex: 1;
+            max-width: 500px;
+            position: relative;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 10px 15px 10px 40px;
+            border-radius: 20px;
+            border: 1px solid #ddd;
+            outline: none;
+            font-size: 14px;
+        }
+
+        .search-bar i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #777;
+        }
+
+        .page-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .dashboard-cards {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background-color: #f2cfcf;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .card-title {
+            font-size: 14px;
+            color: #777;
+            margin-bottom: 10px;
+        }
+
+        .card-value {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        .students-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .student-card {
+            background: #f2cfcf;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 20px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .student-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+        }
+
+        .student-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .student-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: #582c4d;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 18px;
+            margin-right: 15px;
+        }
+
+        .student-info h3 {
+            color: #582c4d;
+            margin-bottom: 5px;
+        }
+
+        .student-info p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .project-list {
+            margin-top: 15px;
+        }
+
+        .project-item {
+            background: white;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border-left: 4px solid #582c4d;
+        }
+
+        .project-title {
+            font-weight: bold;
+            color: #582c4d;
+            margin-bottom: 8px;
+        }
+
+        .project-description {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .subtask-list {
+            margin-top: 10px;
+        }
+
+        .subtask-item {
+            background: #f8f9fa;
+            padding: 8px;
+            margin: 5px 0;
+            border-radius: 4px;
+            border-left: 3px solid #582c4d;
+        }
+
+        .subtask-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+
+        .subtask-title {
+            font-weight: bold;
+            font-size: 13px;
+            color: #582c4d;
+        }
+
+        .subtask-marks {
+            background: #582c4d;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 11px;
+        }
+
+        .subtask-description {
+            font-size: 11px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .subtask-actions {
+            display: flex;
+            gap: 5px;
+            margin-top: 5px;
+        }
+
+        .btn-evaluate {
+            background: #582c4d;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+        }
+
+        .btn-evaluate:hover {
+            background: #3a1830;
+        }
+
+        .evaluation-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            font-size: 16px;
+            background: #f2cfcf;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+
+        .evaluation-table th, .evaluation-table td {
+            border: 1px solid #c4bdbd;
+            padding: 12px 15px;
+            text-align: left;
+        }
+
+        .evaluation-table th {
+            background-color: #582c4d;
+            color: white;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background-color: #f2cfcf;
+            margin: 10% auto;
+            padding: 20px;
+            border-radius: 10px;
+            width: 80%;
+            max-width: 600px;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .close {
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover {
+            color: #000;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #582c4d;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .btn-submit {
+            background: #582c4d;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn-submit:hover {
+            background: #3a1830;
+        }
+
+        .no-data {
+            text-align: center;
+            color: #666;
+            font-style: italic;
+            padding: 40px;
+        }
+
+        .status-pending {
+            background-color: #ebf5ff;
+            color: #3498db;
+        }
+
+        .status-completed {
+            background-color: #e6f7ee;
+            color: #2ecc71;
+        }
+
+        .status-in-progress {
+            background-color: #fff4e5;
+            color: #ffa726;
+        }
+
+        .card-status {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .student-selection-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .student-selection-card {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .student-selection-card:hover {
+            border-color: #582c4d;
+            background: #f0f0f0;
+            transform: translateY(-2px);
+        }
+
+        .student-selection-card.selected {
+            border-color: #582c4d;
+            background: #e8d5e8;
+        }
+
+        .student-selection-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .student-selection-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #582c4d;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 16px;
+            margin-right: 12px;
+        }
+
+        .student-selection-info h4 {
+            margin: 0 0 5px 0;
+            color: #582c4d;
+        }
+
+        .student-selection-info p {
+            margin: 0;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .student-selection-stats {
+            font-size: 11px;
+            color: #666;
+            margin-top: 8px;
+        }
+
+        .student-selection-stats div {
+            margin: 2px 0;
+        }
+
+        .project-detail-card {
+            background: #f2cfcf;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .project-detail-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+
+        .project-detail-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #582c4d;
+            margin: 0;
+        }
+
+        .project-detail-status {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .status-active {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-completed {
+            background: #cce5ff;
+            color: #004085;
+        }
+
+        .status-paused {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .project-detail-meta {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 15px 0;
+        }
+
+        .meta-item {
+            background: white;
+            padding: 10px;
+            border-radius: 6px;
+            border-left: 3px solid #582c4d;
+        }
+
+        .meta-label {
+            font-size: 11px;
+            color: #666;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        .meta-value {
+            font-size: 14px;
+            color: #333;
+            margin-top: 2px;
+        }
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="logo">PROGRESSO<span>!</span></div>
+        <div class="nav-menu">
+            <div class="nav-item active" data-page="dashboardPage">
+                <i class="fas fa-tachometer-alt"></i>
+                <span>Dashboard</span>
+            </div>
+            <div class="nav-item" data-page="studentsPage">
+                <i class="fas fa-users"></i>
+                <span>Students</span>
+            </div>
+            <div class="nav-item" data-page="projectsPage">
+                <i class="fas fa-project-diagram"></i>
+                <span>All Projects</span>
+            </div>
+            <div class="nav-item" data-page="evaluationPage">
+                <i class="fas fa-clipboard-check"></i>
+                <span>Evaluations</span>
+            </div>
+            <div class="nav-item" data-page="assignProjectPage">
+                <i class="fas fa-plus-circle"></i>
+                <span>Assign Project</span>
+            </div>
+            <div class="nav-item" data-page="analyticsPage">
+                <i class="fas fa-chart-bar"></i>
+                <span>Analytics</span>
+            </div>
+            <div class="nav-item" data-page="logout" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </div>
+        </div>
+
+        <div class="user-profile">
+            <img src="abiya.JPG" alt="User" id="userAvatar">
+            <div class="user-info">
+                <h4 id="userName">Loading...</h4>
+                <p id="userRole">Faculty</p>
+            </div>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <div class="header">
+            <div class="search-bar">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="Search students or projects" id="searchInput">
+            </div>
+        </div>
+
+        <!-- Dashboard Page -->
+        <div id="dashboardPage" class="page active">
+            <h1 class="page-title">Faculty Dashboard</h1>
+            <div class="dashboard-cards">
+                <div class="card">
+                    <div class="card-title">Total Students</div>
+                    <div class="card-value" id="totalStudents">0</div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Total Projects</div>
+                    <div class="card-value" id="totalProjects">0</div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Pending Evaluations</div>
+                    <div class="card-value" id="pendingEvaluations">0</div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Completed Evaluations</div>
+                    <div class="card-value" id="completedEvaluations">0</div>
+                </div>
+            </div>
+
+            <div class="students-grid" id="dashboardStudents">
+                <!-- Students will be loaded here -->
+            </div>
+        </div>
+
+        <!-- Students Page -->
+        <div id="studentsPage" class="page">
+            <h1 class="page-title">All Students</h1>
+            <div class="students-grid" id="studentsList">
+                <!-- Students will be loaded here -->
+            </div>
+        </div>
+
+        <!-- Projects Page -->
+        <div id="projectsPage" class="page">
+            <h1 class="page-title">All Projects</h1>
+            <div class="students-grid" id="projectsList">
+                <!-- Projects will be loaded here -->
+            </div>
+        </div>
+
+        <!-- Evaluation Page -->
+        <div id="evaluationPage" class="page">
+            <h1 class="page-title">Evaluation Management</h1>
+            <table class="evaluation-table" id="evaluationTable">
+                <thead>
+                    <tr>
+                        <th>Student</th>
+                        <th>Project</th>
+                        <th>Subtask</th>
+                        <th>Marks</th>
+                        <th>Status</th>
+                        <th>Feedback</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="evaluationTableBody">
+                    <!-- Evaluations will be loaded here -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Assign Project Page -->
+        <div id="assignProjectPage" class="page">
+            <h1 class="page-title">Assign New Project</h1>
+            
+            <!-- Student Selection with Details -->
+            <div class="settings-card">
+                <h3 style="color: #582c4d; margin-bottom: 20px;">📋 Select Student</h3>
+                <div class="student-selection-grid" id="studentSelectionGrid">
+                    <!-- Student cards will be loaded here -->
+                </div>
+            </div>
+
+            <!-- Project Assignment Form -->
+            <div class="settings-card" id="projectFormCard" style="display: none;">
+                <h3 style="color: #582c4d; margin-bottom: 20px;">📝 Project Details</h3>
+                <div id="selectedStudentInfo" style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #582c4d;">
+                    <!-- Selected student info will be shown here -->
+                </div>
+                <form id="assignProjectForm">
+                    <input type="hidden" id="assignStudentId">
+                    <div class="form-group">
+                        <label for="projectTitle">Project Title:</label>
+                        <input type="text" id="projectTitle" required placeholder="Enter project title">
+                    </div>
+                    <div class="form-group">
+                        <label for="projectDescription">Project Description:</label>
+                        <textarea id="projectDescription" rows="4" required placeholder="Enter project description"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="projectDueDate">Due Date:</label>
+                        <input type="date" id="projectDueDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="projectPriority">Priority Level:</label>
+                        <select id="projectPriority">
+                            <option value="low">Low</option>
+                            <option value="medium" selected>Medium</option>
+                            <option value="high">High</option>
+                        </select>
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                        <button type="submit" class="btn-submit">Assign Project</button>
+                        <button type="button" class="btn-submit" onclick="resetProjectForm()" style="background: #6c757d;">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Analytics Page -->
+        <div id="analyticsPage" class="page">
+            <h1 class="page-title">📊 Analytics & Monitoring</h1>
+            
+            <!-- Key Metrics -->
+            <div class="dashboard-cards">
+                <div class="card">
+                    <div class="card-title">Total Students</div>
+                    <div class="card-value" id="analyticsTotalStudents">0</div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Active Projects</div>
+                    <div class="card-value" id="analyticsActiveProjects">0</div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Completed Projects</div>
+                    <div class="card-value" id="analyticsCompletedProjects">0</div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Pending Evaluations</div>
+                    <div class="card-value" id="analyticsPendingEvaluations">0</div>
+                </div>
+            </div>
+
+            <!-- Student Performance Overview -->
+            <div class="settings-card" style="margin-top: 20px;">
+                <h3 style="color: #582c4d; margin-bottom: 20px;">📈 Student Performance Overview</h3>
+                <div id="studentPerformanceChart" style="height: 400px; background: white; border-radius: 8px; padding: 20px;">
+                    <canvas id="performanceChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Project Status Distribution -->
+            <div class="settings-card" style="margin-top: 20px;">
+                <h3 style="color: #582c4d; margin-bottom: 20px;">📊 Project Status Distribution</h3>
+                <div id="projectStatusChart" style="height: 300px; background: white; border-radius: 8px; padding: 20px;">
+                    <canvas id="statusChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Top Performers -->
+            <div class="settings-card" style="margin-top: 20px;">
+                <h3 style="color: #582c4d; margin-bottom: 20px;">🏆 Top Performers</h3>
+                <div id="topPerformersList">
+                    <!-- Top performers will be loaded here -->
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="settings-card" style="margin-top: 20px;">
+                <h3 style="color: #582c4d; margin-bottom: 20px;">🕒 Recent Activity</h3>
+                <div id="recentActivityList">
+                    <!-- Recent activity will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Evaluation Modal -->
+    <div id="evaluationModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Evaluate Subtask</h3>
+                <span class="close">&times;</span>
+            </div>
+            <form id="evaluationForm">
+                <input type="hidden" id="evaluationSubtaskId">
+                <div class="form-group">
+                    <label for="evaluationMarks">Marks (out of 10):</label>
+                    <input type="number" id="evaluationMarks" min="0" max="10" required>
+                </div>
+                <div class="form-group">
+                    <label for="evaluationStatus">Status:</label>
+                    <select id="evaluationStatus" required>
+                        <option value="pending">Pending</option>
+                        <option value="in-progress">In Progress</option>
+                        <option value="completed">Completed</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="evaluationFeedback">Feedback:</label>
+                    <textarea id="evaluationFeedback" rows="4" placeholder="Enter your feedback..."></textarea>
+                </div>
+                <button type="submit" class="btn-submit">Submit Evaluation</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let currentUser = null;
+        let students = [];
+        let projects = [];
+        let allSubtasks = [];
+
+        // Initialize the dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if user is logged in
+            const userData = localStorage.getItem('user');
+            if (!userData) {
+                window.location.href = 'auth.html';
+                return;
+            }
+
+            currentUser = JSON.parse(userData);
+            updateUserInfo();
+            
+            // Show loading state
+            showLoadingState();
+            
+            loadDashboardData();
+            setupEventListeners();
+        });
+
+        function showLoadingState() {
+            document.getElementById('dashboardStudents').innerHTML = `
+                <div class="no-data" style="grid-column: 1 / -1; text-align: center; padding: 40px;">
+                    <div style="font-size: 24px; margin-bottom: 20px;">⏳</div>
+                    <h3>Loading Faculty Dashboard...</h3>
+                    <p>Please wait while we fetch student and project data from the server.</p>
+                </div>
+            `;
+        }
+
+        function updateUserInfo() {
+            document.getElementById('userName').textContent = currentUser.username;
+            document.getElementById('userRole').textContent = currentUser.role;
+        }
+
+        async function loadDashboardData() {
+            try {
+                console.log('Loading faculty dashboard data...');
+                
+                // Load students
+                const studentsResponse = await fetch('/api/students');
+                if (!studentsResponse.ok) {
+                    throw new Error(`Failed to fetch students: ${studentsResponse.status}`);
+                }
+                students = await studentsResponse.json();
+                console.log('Loaded students:', students.length);
+                
+                // Load projects
+                const projectsResponse = await fetch('/api/projects');
+                if (!projectsResponse.ok) {
+                    throw new Error(`Failed to fetch projects: ${projectsResponse.status}`);
+                }
+                projects = await projectsResponse.json();
+                console.log('Loaded projects:', projects.length);
+                
+                // Load all subtasks for all projects
+                allSubtasks = [];
+                for (const project of projects) {
+                    try {
+                        const subtasksResponse = await fetch(`/api/project/${project.id}/subtasks`);
+                        if (subtasksResponse.ok) {
+                            const projectSubtasks = await subtasksResponse.json();
+                            allSubtasks.push(...projectSubtasks.map(st => ({
+                                ...st, 
+                                project_title: project.title,
+                                student_name: project.users?.username || 'Unknown'
+                            })));
+                        }
+                    } catch (error) {
+                        console.error(`Error loading subtasks for project ${project.id}:`, error);
+                    }
+                }
+                console.log('Loaded subtasks:', allSubtasks.length);
+
+                updateDashboard();
+                updateStudentsPage();
+                updateProjectsPage();
+                updateEvaluationPage();
+                updateAssignProjectPage();
+                updateAnalyticsPage();
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+                // Show error message to user
+                document.getElementById('studentsList').innerHTML = `
+                    <div class="no-data" style="grid-column: 1 / -1; text-align: center; padding: 40px;">
+                        <h3>Error Loading Data</h3>
+                        <p>Unable to load student and project data. Please try refreshing the page.</p>
+                        <button onclick="loadDashboardData()" class="btn-submit" style="margin-top: 10px;">Retry</button>
+                    </div>
+                `;
+            }
+        }
+
+        function updateDashboard() {
+            console.log('Updating faculty dashboard with students:', students.length, 'projects:', projects.length, 'subtasks:', allSubtasks.length);
+            
+            // Update dashboard cards
+            document.getElementById('totalStudents').textContent = students.length;
+            document.getElementById('totalProjects').textContent = projects.length;
+            document.getElementById('pendingEvaluations').textContent = allSubtasks.filter(s => s.marks === null).length;
+            document.getElementById('completedEvaluations').textContent = allSubtasks.filter(s => s.marks !== null).length;
+
+            // Update dashboard students (show first 6)
+            const dashboardStudents = document.getElementById('dashboardStudents');
+            dashboardStudents.innerHTML = '';
+
+            if (students.length === 0) {
+                dashboardStudents.innerHTML = `
+                    <div class="no-data" style="grid-column: 1 / -1; text-align: center; padding: 40px;">
+                        <h3>No Students Found</h3>
+                        <p>No students are currently registered in the system.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            students.slice(0, 6).forEach(student => {
+                const studentProjects = projects.filter(p => p.student_id === student.id);
+                const studentCard = createStudentCard(student, studentProjects);
+                dashboardStudents.appendChild(studentCard);
+            });
+        }
+
+        function updateStudentsPage() {
+            const studentsList = document.getElementById('studentsList');
+            studentsList.innerHTML = '';
+
+            if (students.length === 0) {
+                studentsList.innerHTML = `
+                    <div class="no-data" style="grid-column: 1 / -1; text-align: center; padding: 40px;">
+                        <h3>No Students Found</h3>
+                        <p>No students are currently registered in the system.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            students.forEach(student => {
+                const studentProjects = projects.filter(p => p.student_id === student.id);
+                const studentCard = createStudentCard(student, studentProjects);
+                studentsList.appendChild(studentCard);
+            });
+        }
+
+        function updateProjectsPage() {
+            const projectsList = document.getElementById('projectsList');
+            projectsList.innerHTML = '';
+
+            if (projects.length === 0) {
+                projectsList.innerHTML = `
+                    <div class="no-data" style="grid-column: 1 / -1; text-align: center; padding: 40px;">
+                        <h3>No Projects Found</h3>
+                        <p>No projects have been assigned yet. Use the "Assign Project" page to create new projects for students.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            projects.forEach(project => {
+                const projectSubtasks = allSubtasks.filter(s => s.project_id === project.id);
+                const completedSubtasks = projectSubtasks.filter(s => s.status === 'completed').length;
+                const progress = projectSubtasks.length > 0 ? (completedSubtasks / projectSubtasks.length) * 100 : 0;
+                
+                // Calculate project statistics
+                const projectMarks = projectSubtasks.filter(s => s.marks !== null);
+                const averageScore = projectMarks.length > 0 ? 
+                    Math.round((projectMarks.reduce((sum, s) => sum + s.marks, 0) / projectMarks.length) * 10) / 10 : 0;
+                
+                const pendingEvaluations = projectSubtasks.filter(s => s.marks === null).length;
+                const overdueSubtasks = projectSubtasks.filter(s => {
+                    if (!s.due_date) return false;
+                    return new Date(s.due_date) < new Date() && s.status !== 'completed';
+                }).length;
+
+                const projectCard = document.createElement('div');
+                projectCard.className = 'project-detail-card';
+                projectCard.innerHTML = `
+                    <div class="project-detail-header">
+                        <h3 class="project-detail-title">${project.title}</h3>
+                        <span class="project-detail-status status-${project.status}">${project.status.toUpperCase()}</span>
+                    </div>
+                    
+                    <div class="project-detail-meta">
+                        <div class="meta-item">
+                            <div class="meta-label">Student</div>
+                            <div class="meta-value">${project.users?.username || 'Unknown'} (${project.users?.student_id || 'N/A'})</div>
+                        </div>
+                        <div class="meta-item">
+                            <div class="meta-label">Due Date</div>
+                            <div class="meta-value">${project.due_date || 'Not set'}</div>
+                        </div>
+                        <div class="meta-item">
+                            <div class="meta-label">Progress</div>
+                            <div class="meta-value">${Math.round(progress)}% Complete</div>
+                        </div>
+                        <div class="meta-item">
+                            <div class="meta-label">Average Score</div>
+                            <div class="meta-value">${averageScore}/10</div>
+                        </div>
+                        <div class="meta-item">
+                            <div class="meta-label">Subtasks</div>
+                            <div class="meta-value">${completedSubtasks}/${projectSubtasks.length} completed</div>
+                        </div>
+                        <div class="meta-item">
+                            <div class="meta-label">Pending Evaluation</div>
+                            <div class="meta-value">${pendingEvaluations} tasks</div>
+                        </div>
+                    </div>
+                    
+                    <div style="margin: 15px 0;">
+                        <div class="progress-container">
+                            <div class="progress-bar" style="width: ${progress}%; height: 10px; background-color: #582c4d; border-radius: 5px;"></div>
+                        </div>
+                        <div class="progress-text" style="font-size: 12px; color: #582c4d; font-weight: bold; margin-top: 5px;">
+                            ${Math.round(progress)}% Complete (${completedSubtasks}/${projectSubtasks.length} subtasks)
+                        </div>
+                    </div>
+                    
+                    <div style="margin: 15px 0;">
+                        <h4 style="color: #582c4d; margin-bottom: 10px;">Project Description</h4>
+                        <p style="color: #666; line-height: 1.5;">${project.description || 'No description provided'}</p>
+                    </div>
+                    
+                    <div style="margin: 15px 0;">
+                        <h4 style="color: #582c4d; margin-bottom: 10px;">Subtasks (${projectSubtasks.length})</h4>
+                        <div class="subtask-list" style="max-height: 300px; overflow-y: auto;">
+                            ${projectSubtasks.map(subtask => `
+                                <div class="subtask-item" style="margin-bottom: 10px;">
+                                    <div class="subtask-header">
+                                        <span class="subtask-title">${subtask.title}</span>
+                                        <span class="subtask-marks">${subtask.marks || 'Pending'}</span>
+                                    </div>
+                                    <div class="subtask-description">${subtask.description || 'No description'}</div>
+                                    <div style="font-size: 11px; color: #666; margin: 5px 0;">
+                                        <span>Due: ${subtask.due_date || 'Not set'}</span> | 
+                                        <span>Status: ${subtask.status}</span>
+                                        ${subtask.evaluated_at ? `| Evaluated: ${new Date(subtask.evaluated_at).toLocaleDateString()}` : ''}
+                                    </div>
+                                    ${subtask.feedback ? `<div class="subtask-feedback" style="font-size: 11px; color: #888; font-style: italic; background: #f8f9fa; padding: 5px; border-radius: 4px; margin-top: 5px;">${subtask.feedback}</div>` : ''}
+                                    <div class="subtask-actions" style="margin-top: 8px;">
+                                        <button class="btn-evaluate" onclick="openEvaluationModal(${subtask.id})">
+                                            ${subtask.marks ? 'Update Evaluation' : 'Evaluate'}
+                                        </button>
+                                    </div>
+                                </div>
+                            `).join('')}
+                            ${projectSubtasks.length === 0 ? '<div class="no-data">No subtasks yet</div>' : ''}
+                        </div>
+                    </div>
+                    
+                    ${overdueSubtasks > 0 ? `
+                        <div style="background: #f8d7da; color: #721c24; padding: 10px; border-radius: 6px; margin-top: 15px; border-left: 4px solid #dc3545;">
+                            <strong>⚠️ Warning:</strong> ${overdueSubtasks} subtask(s) are overdue
+                        </div>
+                    ` : ''}
+                `;
+                projectsList.appendChild(projectCard);
+            });
+        }
+
+        function updateEvaluationPage() {
+            const tableBody = document.getElementById('evaluationTableBody');
+            tableBody.innerHTML = '';
+
+            if (allSubtasks.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="7" class="no-data">No subtasks found</td></tr>';
+                return;
+            }
+
+            // Sort subtasks by evaluation status (pending first, then evaluated)
+            const sortedSubtasks = allSubtasks.sort((a, b) => {
+                if (a.marks === null && b.marks !== null) return -1;
+                if (a.marks !== null && b.marks === null) return 1;
+                return 0;
+            });
+
+            sortedSubtasks.forEach(subtask => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><strong>${subtask.student_name}</strong></td>
+                    <td>${subtask.project_title}</td>
+                    <td>${subtask.title}</td>
+                    <td><strong>${subtask.marks || 'Not evaluated'}</strong></td>
+                    <td><span class="card-status status-${subtask.status}">${subtask.status}</span></td>
+                    <td>${subtask.feedback || 'No feedback provided'}</td>
+                    <td>
+                        <button class="btn-evaluate" onclick="openEvaluationModal(${subtask.id})">
+                            ${subtask.marks ? 'Update' : 'Evaluate'}
+                        </button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        function createStudentCard(student, studentProjects) {
+            const studentCard = document.createElement('div');
+            studentCard.className = 'student-card';
+            
+            // Calculate student statistics
+            const totalProjects = studentProjects.length;
+            const completedProjects = studentProjects.filter(p => p.status === 'completed').length;
+            const activeProjects = studentProjects.filter(p => p.status === 'active').length;
+            
+            let totalSubtasks = 0;
+            let completedSubtasks = 0;
+            let totalMarks = 0;
+            let evaluatedSubtasks = 0;
+            
+            studentProjects.forEach(project => {
+                const projectSubtasks = allSubtasks.filter(s => s.project_id === project.id);
+                totalSubtasks += projectSubtasks.length;
+                completedSubtasks += projectSubtasks.filter(s => s.status === 'completed').length;
+                
+                projectSubtasks.forEach(subtask => {
+                    if (subtask.marks !== null) {
+                        totalMarks += subtask.marks;
+                        evaluatedSubtasks++;
+                    }
+                });
+            });
+            
+            const overallProgress = totalSubtasks > 0 ? Math.round((completedSubtasks / totalSubtasks) * 100) : 0;
+            const averageScore = evaluatedSubtasks > 0 ? Math.round((totalMarks / evaluatedSubtasks) * 10) / 10 : 0;
+            
+            const projectList = studentProjects.map(project => {
+                const projectSubtasks = allSubtasks.filter(s => s.project_id === project.id);
+                const completedSubtasks = projectSubtasks.filter(s => s.status === 'completed').length;
+                const progress = projectSubtasks.length > 0 ? (completedSubtasks / projectSubtasks.length) * 100 : 0;
+                
+                // Calculate project average score
+                const projectMarks = projectSubtasks.filter(s => s.marks !== null);
+                const projectAverageScore = projectMarks.length > 0 ? 
+                    Math.round((projectMarks.reduce((sum, s) => sum + s.marks, 0) / projectMarks.length) * 10) / 10 : 0;
+
+                return `
+                    <div class="project-item">
+                        <div class="project-title">${project.title}</div>
+                        <div class="project-description">${project.description}</div>
+                        <div class="project-meta" style="font-size: 11px; color: #666; margin: 5px 0;">
+                            <span>Status: <strong>${project.status}</strong></span> | 
+                            <span>Due: ${project.due_date || 'Not set'}</span> | 
+                            <span>Score: ${projectAverageScore}/10</span>
+                        </div>
+                        <div class="progress-container" style="margin: 5px 0;">
+                            <div class="progress-bar" style="width: ${progress}%; height: 6px; background-color: #582c4d; border-radius: 3px;"></div>
+                        </div>
+                        <div class="progress-text" style="font-size: 11px; color: #582c4d; font-weight: bold;">${Math.round(progress)}% Complete (${completedSubtasks}/${projectSubtasks.length} subtasks)</div>
+                        <div class="subtask-list">
+                            ${projectSubtasks.slice(0, 3).map(subtask => `
+                                <div class="subtask-item">
+                                    <div class="subtask-header">
+                                        <span class="subtask-title">${subtask.title}</span>
+                                        <span class="subtask-marks">${subtask.marks || 'Pending'}</span>
+                                    </div>
+                                    <div class="subtask-description">${subtask.description}</div>
+                                    ${subtask.feedback ? `<div class="subtask-feedback" style="font-size: 10px; color: #888; font-style: italic;">${subtask.feedback}</div>` : ''}
+                                    <div class="subtask-actions">
+                                        <button class="btn-evaluate" onclick="openEvaluationModal(${subtask.id})">Evaluate</button>
+                                    </div>
+                                </div>
+                            `).join('')}
+                            ${projectSubtasks.length > 3 ? `<div style="font-size: 10px; color: #666; text-align: center; margin-top: 5px;">+${projectSubtasks.length - 3} more subtasks</div>` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            studentCard.innerHTML = `
+                <div class="student-header">
+                    <div class="student-avatar">${student.username.charAt(0).toUpperCase()}</div>
+                    <div class="student-info">
+                        <h3>${student.username}</h3>
+                        <p>Student ID: ${student.student_id || 'N/A'}</p>
+                        <div class="student-stats" style="font-size: 12px; color: #666; margin-top: 5px;">
+                            <div>📊 Overall Progress: <strong>${overallProgress}%</strong></div>
+                            <div>📈 Average Score: <strong>${averageScore}/10</strong></div>
+                            <div>📚 Projects: <strong>${completedProjects}/${totalProjects} completed</strong></div>
+                            <div>✅ Subtasks: <strong>${completedSubtasks}/${totalSubtasks} completed</strong></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="project-list">
+                    ${projectList || '<div class="no-data">No projects assigned</div>'}
+                </div>
+            `;
+
+            return studentCard;
+        }
+
+        function setupEventListeners() {
+            // Navigation
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    if (item.dataset.page === 'logout') {
+                        logout();
+                        return;
+                    }
+
+                    document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+                    item.classList.add('active');
+
+                    document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+                    document.getElementById(item.dataset.page).classList.add('active');
+                });
+            });
+
+            // Evaluation modal
+            const modal = document.getElementById('evaluationModal');
+            const closeBtn = document.querySelector('.close');
+            const form = document.getElementById('evaluationForm');
+
+            closeBtn.onclick = () => modal.style.display = 'none';
+            window.onclick = (event) => {
+                if (event.target === modal) modal.style.display = 'none';
+            };
+
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const subtaskId = document.getElementById('evaluationSubtaskId').value;
+                const formData = {
+                    marks: parseInt(document.getElementById('evaluationMarks').value),
+                    feedback: document.getElementById('evaluationFeedback').value,
+                    status: document.getElementById('evaluationStatus').value
+                };
+
+                try {
+                    const response = await fetch(`/api/subtask/${subtaskId}/evaluate`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(formData)
+                    });
+
+                    const result = await response.json();
+
+                    if (response.ok) {
+                        alert('Evaluation submitted successfully!');
+                        modal.style.display = 'none';
+                        form.reset();
+                        loadDashboardData(); // Reload data
+                    } else {
+                        alert('Error submitting evaluation: ' + (result.message || 'Unknown error'));
+                    }
+                } catch (error) {
+                    console.error('Error submitting evaluation:', error);
+                    alert('Error submitting evaluation: ' + error.message);
+                }
+            });
+
+            // Search functionality
+            document.getElementById('searchInput').addEventListener('input', (e) => {
+                const searchTerm = e.target.value.toLowerCase();
+                // Implement search functionality here
+                console.log('Searching for:', searchTerm);
+            });
+
+            // Project assignment form
+            document.getElementById('assignProjectForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const formData = {
+                    student_id: document.getElementById('assignStudentId').value,
+                    title: document.getElementById('projectTitle').value,
+                    description: document.getElementById('projectDescription').value,
+                    due_date: document.getElementById('projectDueDate').value,
+                    faculty_id: currentUser.id
+                };
+
+                try {
+                    const response = await fetch('/api/assign-project', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(formData)
+                    });
+
+                    const result = await response.json();
+                    
+                    if (response.ok) {
+                        alert('Project assigned successfully!');
+                        document.getElementById('assignProjectForm').reset();
+                        resetProjectForm();
+                        loadDashboardData(); // Reload data to show new project
+                    } else {
+                        alert('Error: ' + result.message);
+                    }
+                } catch (error) {
+                    console.error('Error assigning project:', error);
+                    alert('Error assigning project. Please try again.');
+                }
+            });
+        }
+
+        function openEvaluationModal(subtaskId) {
+            const modal = document.getElementById('evaluationModal');
+            const subtask = allSubtasks.find(s => s.id === subtaskId);
+            
+            if (subtask) {
+                document.getElementById('evaluationSubtaskId').value = subtaskId;
+                document.getElementById('evaluationMarks').value = subtask.marks || '';
+                document.getElementById('evaluationStatus').value = subtask.status || 'pending';
+                document.getElementById('evaluationFeedback').value = subtask.feedback || '';
+            }
+
+            modal.style.display = 'block';
+        }
+
+        function updateAssignProjectPage() {
+            const studentSelectionGrid = document.getElementById('studentSelectionGrid');
+            studentSelectionGrid.innerHTML = '';
+            
+            students.forEach(student => {
+                const studentProjects = projects.filter(p => p.student_id === student.id);
+                
+                // Calculate student statistics
+                let totalSubtasks = 0;
+                let completedSubtasks = 0;
+                let totalMarks = 0;
+                let evaluatedSubtasks = 0;
+                
+                studentProjects.forEach(project => {
+                    const projectSubtasks = allSubtasks.filter(s => s.project_id === project.id);
+                    totalSubtasks += projectSubtasks.length;
+                    completedSubtasks += projectSubtasks.filter(s => s.status === 'completed').length;
+                    
+                    projectSubtasks.forEach(subtask => {
+                        if (subtask.marks !== null) {
+                            totalMarks += subtask.marks;
+                            evaluatedSubtasks++;
+                        }
+                    });
+                });
+                
+                const overallProgress = totalSubtasks > 0 ? Math.round((completedSubtasks / totalSubtasks) * 100) : 0;
+                const averageScore = evaluatedSubtasks > 0 ? Math.round((totalMarks / evaluatedSubtasks) * 10) / 10 : 0;
+                
+                const studentCard = document.createElement('div');
+                studentCard.className = 'student-selection-card';
+                studentCard.onclick = () => selectStudent(student);
+                studentCard.innerHTML = `
+                    <div class="student-selection-header">
+                        <div class="student-selection-avatar">${student.username.charAt(0).toUpperCase()}</div>
+                        <div class="student-selection-info">
+                            <h4>${student.username}</h4>
+                            <p>ID: ${student.student_id || 'N/A'}</p>
+                        </div>
+                    </div>
+                    <div class="student-selection-stats">
+                        <div>📊 Progress: <strong>${overallProgress}%</strong></div>
+                        <div>📈 Score: <strong>${averageScore}/10</strong></div>
+                        <div>📚 Projects: <strong>${studentProjects.length}</strong></div>
+                        <div>✅ Completed: <strong>${completedSubtasks}/${totalSubtasks}</strong></div>
+                    </div>
+                `;
+                studentSelectionGrid.appendChild(studentCard);
+            });
+        }
+
+        function selectStudent(student) {
+            // Remove previous selection
+            document.querySelectorAll('.student-selection-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            
+            // Add selection to clicked card
+            event.currentTarget.classList.add('selected');
+            
+            // Show project form
+            document.getElementById('projectFormCard').style.display = 'block';
+            document.getElementById('assignStudentId').value = student.id;
+            
+            // Update selected student info
+            const studentProjects = projects.filter(p => p.student_id === student.id);
+            const studentInfo = document.getElementById('selectedStudentInfo');
+            studentInfo.innerHTML = `
+                <h4>Selected Student: ${student.username}</h4>
+                <p><strong>Student ID:</strong> ${student.student_id || 'N/A'}</p>
+                <p><strong>Current Projects:</strong> ${studentProjects.length}</p>
+                <p><strong>Email:</strong> ${student.email}</p>
+            `;
+        }
+
+        function resetProjectForm() {
+            document.getElementById('projectFormCard').style.display = 'none';
+            document.getElementById('assignProjectForm').reset();
+            document.querySelectorAll('.student-selection-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+        }
+
+        function updateAnalyticsPage() {
+            // Update key metrics
+            document.getElementById('analyticsTotalStudents').textContent = students.length;
+            document.getElementById('analyticsActiveProjects').textContent = projects.filter(p => p.status === 'active').length;
+            document.getElementById('analyticsCompletedProjects').textContent = projects.filter(p => p.status === 'completed').length;
+            document.getElementById('analyticsPendingEvaluations').textContent = allSubtasks.filter(s => s.marks === null).length;
+
+            // Update top performers
+            updateTopPerformers();
+            
+            // Update recent activity
+            updateRecentActivity();
+            
+            // Update charts
+            updatePerformanceChart();
+            updateStatusChart();
+        }
+
+        function updateTopPerformers() {
+            const topPerformersList = document.getElementById('topPerformersList');
+            topPerformersList.innerHTML = '';
+
+            // Calculate student performance scores
+            const studentPerformance = students.map(student => {
+                const studentProjects = projects.filter(p => p.student_id === student.id);
+                let totalMarks = 0;
+                let evaluatedSubtasks = 0;
+                let totalSubtasks = 0;
+                let completedSubtasks = 0;
+
+                studentProjects.forEach(project => {
+                    const projectSubtasks = allSubtasks.filter(s => s.project_id === project.id);
+                    totalSubtasks += projectSubtasks.length;
+                    completedSubtasks += projectSubtasks.filter(s => s.status === 'completed').length;
+                    
+                    projectSubtasks.forEach(subtask => {
+                        if (subtask.marks !== null) {
+                            totalMarks += subtask.marks;
+                            evaluatedSubtasks++;
+                        }
+                    });
+                });
+
+                const averageScore = evaluatedSubtasks > 0 ? totalMarks / evaluatedSubtasks : 0;
+                const completionRate = totalSubtasks > 0 ? (completedSubtasks / totalSubtasks) * 100 : 0;
+                const performanceScore = (averageScore * 0.7) + (completionRate * 0.3); // Weighted score
+
+                return {
+                    student,
+                    averageScore: Math.round(averageScore * 10) / 10,
+                    completionRate: Math.round(completionRate),
+                    performanceScore: Math.round(performanceScore * 10) / 10,
+                    totalProjects: studentProjects.length,
+                    completedSubtasks,
+                    totalSubtasks
+                };
+            });
+
+            // Sort by performance score
+            studentPerformance.sort((a, b) => b.performanceScore - a.performanceScore);
+
+            // Display top 5 performers
+            studentPerformance.slice(0, 5).forEach((perf, index) => {
+                const performerCard = document.createElement('div');
+                performerCard.style.cssText = `
+                    background: ${index === 0 ? '#fff3cd' : '#f8f9fa'};
+                    border: ${index === 0 ? '2px solid #ffc107' : '1px solid #dee2e6'};
+                    border-radius: 8px;
+                    padding: 15px;
+                    margin-bottom: 10px;
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                `;
+                
+                performerCard.innerHTML = `
+                    <div style="display: flex; align-items: center;">
+                        <div style="font-size: 20px; margin-right: 15px;">${index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : '🏅'}</div>
+                        <div>
+                            <h4 style="margin: 0; color: #582c4d;">${perf.student.username}</h4>
+                            <p style="margin: 5px 0 0 0; font-size: 12px; color: #666;">ID: ${perf.student.student_id || 'N/A'}</p>
+                        </div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="font-size: 18px; font-weight: bold; color: #582c4d;">${perf.performanceScore}/10</div>
+                        <div style="font-size: 11px; color: #666;">Score: ${perf.averageScore}/10 | Progress: ${perf.completionRate}%</div>
+                        <div style="font-size: 11px; color: #666;">Projects: ${perf.totalProjects} | Tasks: ${perf.completedSubtasks}/${perf.totalSubtasks}</div>
+                    </div>
+                `;
+                topPerformersList.appendChild(performerCard);
+            });
+        }
+
+        function updateRecentActivity() {
+            const recentActivityList = document.getElementById('recentActivityList');
+            recentActivityList.innerHTML = '';
+
+            // Create recent activity items
+            const activities = [];
+
+            // Add recent subtask evaluations
+            allSubtasks
+                .filter(s => s.evaluated_at)
+                .sort((a, b) => new Date(b.evaluated_at) - new Date(a.evaluated_at))
+                .slice(0, 5)
+                .forEach(subtask => {
+                    activities.push({
+                        type: 'evaluation',
+                        message: `Evaluated "${subtask.title}" with ${subtask.marks}/10`,
+                        time: new Date(subtask.evaluated_at),
+                        icon: '📝'
+                    });
+                });
+
+            // Add recent subtask additions
+            allSubtasks
+                .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+                .slice(0, 5)
+                .forEach(subtask => {
+                    activities.push({
+                        type: 'subtask',
+                        message: `New subtask added: "${subtask.title}"`,
+                        time: new Date(subtask.created_at),
+                        icon: '➕'
+                    });
+                });
+
+            // Sort by time and take most recent 10
+            activities
+                .sort((a, b) => b.time - a.time)
+                .slice(0, 10)
+                .forEach(activity => {
+                    const activityItem = document.createElement('div');
+                    activityItem.style.cssText = `
+                        background: #f8f9fa;
+                        border-left: 3px solid #582c4d;
+                        padding: 10px 15px;
+                        margin-bottom: 8px;
+                        border-radius: 4px;
+                        display: flex;
+                        align-items: center;
+                    `;
+                    
+                    activityItem.innerHTML = `
+                        <div style="font-size: 16px; margin-right: 12px;">${activity.icon}</div>
+                        <div style="flex: 1;">
+                            <div style="font-size: 14px; color: #333;">${activity.message}</div>
+                            <div style="font-size: 11px; color: #666; margin-top: 2px;">${activity.time.toLocaleString()}</div>
+                        </div>
+                    `;
+                    recentActivityList.appendChild(activityItem);
+                });
+
+            if (activities.length === 0) {
+                recentActivityList.innerHTML = '<div class="no-data">No recent activity</div>';
+            }
+        }
+
+        function updatePerformanceChart() {
+            const ctx = document.getElementById('performanceChart').getContext('2d');
+            
+            // Calculate performance data
+            const studentPerformance = students.map(student => {
+                const studentProjects = projects.filter(p => p.student_id === student.id);
+                let totalMarks = 0;
+                let evaluatedSubtasks = 0;
+
+                studentProjects.forEach(project => {
+                    const projectSubtasks = allSubtasks.filter(s => s.project_id === project.id);
+                    projectSubtasks.forEach(subtask => {
+                        if (subtask.marks !== null) {
+                            totalMarks += subtask.marks;
+                            evaluatedSubtasks++;
+                        }
+                    });
+                });
+
+                return {
+                    name: student.username,
+                    score: evaluatedSubtasks > 0 ? Math.round((totalMarks / evaluatedSubtasks) * 10) / 10 : 0
+                };
+            });
+
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: studentPerformance.map(p => p.name),
+                    datasets: [{
+                        label: 'Average Score',
+                        data: studentPerformance.map(p => p.score),
+                        backgroundColor: '#582c4d',
+                        borderColor: '#3a1830',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 10
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateStatusChart() {
+            const ctx = document.getElementById('statusChart').getContext('2d');
+            
+            const statusCounts = {
+                active: projects.filter(p => p.status === 'active').length,
+                completed: projects.filter(p => p.status === 'completed').length,
+                paused: projects.filter(p => p.status === 'paused').length,
+                cancelled: projects.filter(p => p.status === 'cancelled').length
+            };
+
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(statusCounts).map(s => s.charAt(0).toUpperCase() + s.slice(1)),
+                    datasets: [{
+                        data: Object.values(statusCounts),
+                        backgroundColor: ['#28a745', '#007bff', '#ffc107', '#dc3545'],
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                localStorage.removeItem('user');
+                window.location.href = 'auth.html';
+            }
+        }
+    </script>
+</body>
+</html>
