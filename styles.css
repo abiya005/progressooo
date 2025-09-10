@@ -1,0 +1,228 @@
+/* General Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+/* Layout */
+.layout {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 220px;
+  background-color: #4B2142;
+  color: #fff;
+  padding: 30px 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: fixed;
+  height: 100vh;
+}
+
+.sidebar h1 {
+  font-size: 20px;
+  margin-bottom: 30px;
+}
+
+.sidebar nav ul {
+  list-style: none;
+}
+
+.sidebar nav ul li {
+  padding: 10px;
+  color: #dfcbd3;
+  cursor: pointer;
+  border-left: 4px solid transparent;
+}
+
+.sidebar nav ul li.active {
+  background-color: #7D4C71;
+  border-left: 4px solid #fff;
+  color: white;
+}
+
+.user-info {
+  font-size: 14px;
+}
+
+/* Main Area */
+.main-area {
+  margin-left: 220px;
+  width: calc(100% - 220px);
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+/* Navbar */
+.navbar {
+  background-color: #4B2142;
+  height: 60px;
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 20px;
+  align-items: center;
+  color: white;
+}
+
+.navbar input {
+  width: 300px;
+  padding: 8px;
+  border-radius: 5px;
+  border: none;
+}
+
+.nav-icons {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+
+/* Main Scrollable Content */
+.content {
+  flex: 1;
+  overflow-y: auto;
+  background-color: #f3d8dd;
+  padding: 20px;
+}
+
+/* Card Styles */
+.card {
+  background-color: #e7bfc6;
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 20px;
+  color: #2c1423;
+}
+
+/* Top Section */
+.top-section {
+  display: flex;
+  gap: 20px;
+}
+
+.project-name {
+  flex: 1;
+  font-size: 20px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.progress {
+  width: 200px;
+}
+
+.bar-container {
+  background: #fff;
+  height: 10px;
+  border-radius: 10px;
+  overflow: hidden;
+  margin: 8px 0;
+}
+
+.bar {
+  height: 100%;
+  background: #4B2142;
+}
+
+/* Status Box */
+.status {
+  width: 160px;
+}
+
+.status-box {
+  margin-top: 10px;
+  background-color: #dba2a9;
+  padding: 8px 12px;
+  border-radius: 6px;
+  text-align: center;
+  font-weight: bold;
+}
+
+/* Middle Section */
+.middle-section {
+  display: flex;
+  gap: 20px;
+}
+
+/* Graph */
+.graph .bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 15px;
+  height: 100px;
+  margin-top: 15px;
+}
+
+.graph .bars div {
+  width: 20px;
+  background-color: #4B2142;
+}
+
+.label-x {
+  text-align: center;
+  margin-top: 10px;
+}
+
+/* Tasks */
+.tasks ul {
+  list-style: none;
+  margin-top: 10px;
+}
+
+.tasks li {
+  margin-bottom: 10px;
+}
+
+.tasks li span {
+  color: red;
+  font-weight: bold;
+}
+
+/* Submissions */
+.submissions ul {
+  list-style: none;
+  margin-top: 10px;
+}
+
+.submissions li {
+  margin-bottom: 10px;
+}
+
+.approved {
+  color: green;
+}
+
+.pending {
+  color: orange;
+}
+
+.declined {
+  color: red;
+}
+
+/* Footer */
+.footer {
+  background-color: #4B2142;
+  color: white;
+  padding: 20px;
+  font-size: 13px;
+  text-align: center;
+}
+
+.footer-links {
+  margin-top: 10px;
+}

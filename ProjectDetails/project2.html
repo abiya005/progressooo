@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Project Details</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #582c4d;
+    }
+
+    .container {
+      width: 90%;
+      max-width: 1000px;
+      padding: 40px;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+      color: #fff;
+      animation: fadeIn 1s ease;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+        .header h1 {
+  font-size: 2.5rem;
+  background: linear-gradient(to right, #f2cfcf, #fff);
+  background-clip: text;              /* Standard */
+  -webkit-background-clip: text;      /* For Chrome, Safari */
+  color: transparent;                 /* Standard fallback */
+  -webkit-text-fill-color: transparent; /* For Safari */
+  margin-bottom: 10px;
+}
+
+    .header p {
+      color: #ddd;
+      font-size: 1rem;
+    }
+
+    .details-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+      margin-bottom: 40px;
+    }
+
+    .detail-card {
+      background: rgba(255,255,255,0.1);
+      border-radius: 15px;
+      padding: 20px;
+      transition: transform 0.3s, box-shadow 0.3s;
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+
+    .detail-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+    }
+
+    .detail-card h3 {
+      font-size: 1rem;
+      margin-bottom: 8px;
+      color: #f2cfcf;
+    }
+
+    .detail-card p {
+      font-size: 1rem;
+      color: #fff;
+      margin: 0;
+    }
+
+    .description {
+      margin-top: 20px;
+      padding: 20px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 15px;
+      border: 1px solid rgba(255,255,255,0.15);
+    }
+
+    .description h2 {
+      font-size: 1.4rem;
+      margin-bottom: 15px;
+      color: #f2cfcf;
+    }
+
+    .description p {
+      line-height: 1.6;
+      font-size: 1rem;
+      color: #eee;
+    }
+
+    .btn-back {
+      display: inline-block;
+      margin-top: 30px;
+      padding: 12px 25px;
+      background: linear-gradient(135deg, #582c4d, #f2cfcf);
+      color: #fff;
+      border-radius: 10px;
+      text-decoration: none;
+      font-weight: 600;
+      transition: all 0.3s;
+    }
+
+    .btn-back:hover {
+      transform: scale(1.05);
+    }
+
+    @keyframes fadeIn {
+      from {opacity: 0; transform: translateY(20px);}
+      to {opacity: 1; transform: translateY(0);}
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <!-- Project Title -->
+    <div class="header">
+      <h1>School Management System</h1>
+      <p>Project ID: #101</p>
+    </div>
+
+    <!-- Project Info -->
+    <div class="details-grid">
+      <div class="detail-card">
+        <h3>Submission Date</h3>
+        <p>August 25, 2025</p>
+      </div>
+      <div class="detail-card">
+        <h3>Due Date</h3>
+        <p>September 10, 2025</p>
+      </div>
+      <div class="detail-card">
+        <h3>Faculty Allocated</h3>
+        <p>Prof. John Doe</p>
+      </div>
+      <div class="detail-card">
+        <h3>Total Marks</h3>
+        <p>100</p>
+      </div>
+    </div>
+
+    <!-- Project Description -->
+    <div class="description">
+      <h2>Project Description</h2>
+      <p>
+        The School Management System is a comprehensive application designed to
+        streamline the management of students, staff, attendance, and exams. 
+        It ensures efficient administration by providing centralized access 
+        to all records, reports, and communications.
+      </p>
+    </div>
+
+    <!-- Back Button -->
+    <a href="../dashboard.html#projectPage" class="btn-back">← Back to Projects</a>
+  </div>
+
+</body>
+</html>

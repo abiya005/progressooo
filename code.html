@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700&display=swap" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Progresso</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Georgia', serif;
+      color: #ffffff;
+      background: url('Casual Office or Café Gathering.jpeg') no-repeat center center/cover;
+      min-height: 110vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: 100vw;
+  background-color: rgba(236, 226, 208, 0.5); /* adjust opacity here */
+  z-index: -1;
+}
+
+    .navbar {
+      background-color: rgba(88, 44, 77,0.9);
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items:flex-start ;
+      transition: background-color 0.5s ease;
+    }
+
+        .navbar:hover {
+  background-color: rgba(88, 44, 77);
+  
+}
+
+    .navbar h1 {
+      margin: 0;
+      font-size: 1.25rem;
+      color: #fff;
+      font-family:'Noto Serif';
+    }
+
+    .navbar a {
+      color: #fff;
+      text-decoration: none;
+      font-family:'Noto Serif';
+      font-size: 1.25rem;
+      transition: all 0.5s ease;
+    }
+
+    .navbar a:hover {
+  transform: scale(1.2); 
+}
+
+    .main {
+      flex-grow: 1;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      
+    }
+
+    .main h2 {
+       font-size:5rem;
+       color: rgba(88, 44, 77,0.6);
+        margin: 0;
+        position: absolute;
+        top: 3rem;
+        left: 2rem;
+    }
+
+    .main p.subtitle {
+      font-size:1.5rem;
+      margin-top: 0.5rem;
+      color: rgba(88, 44, 77,0.6);
+      position: absolute;
+        top: 8rem;
+        left: 2rem;
+    }
+
+    .main .button {
+      position: absolute;
+  top: 7rem;
+  right: 7.5rem;
+  background-color: rgba(88, 44, 77);
+  color: #f1e5f4     ;
+  padding: 0.75rem 2rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 20px;
+  font-weight: bold;
+  cursor: pointer;
+  height:45px;
+  width:250px;
+  transition: background-color 0.5s ease;
+    }
+
+    
+.main .button:hover {
+  background-color: rgba(88, 44, 77, 0.4);
+  color: black;
+}
+
+    .description {
+      padding: 2rem;
+      background-color: rgba(88, 44, 77, 0.5);
+      color: #f1e5f4;
+      font-size: 1rem;
+      text-align: center; 
+      margin-top: 2rem;
+      transition: background-color 0.5s ease;
+    }
+
+    .description:hover {
+  background-color: rgba(88, 44, 77);
+
+  
+  
+}
+
+
+  </style>
+</head>
+<body>
+    <div class="background">
+    <div class="overlay"></div>
+  </div>
+  <div class="navbar">
+    <h1>PROGRESSO !</h1>
+    <a href="#">Sign In</a>
+  </div>
+
+  <div class="main">
+    <h2>PROGRESSO</h2>
+    <p class="subtitle">Guiding Your Project to Completion.</p>
+    <a href="auth.html">
+  <button class="button">Get started</button>
+</a>
+    
+  </div>
+
+  <div class="description">
+    <p>The ultimate platform to monitor, manage, and evaluate final year projects with ease. Whether you're a student, guide, or evaluator, Progresso provides real-time progress tracking, milestone submissions, assessment tools, and insightful reports — all in one place. Simplify your project journey from proposal to completion with clarity and collaboration.</p>
+  </div>
+</body>
+</html>

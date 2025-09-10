@@ -1,0 +1,1344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Progresso - Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+     <script src="https://kit.fontawesome.com/6c52c5d47f.js" crossorigin="anonymous"></script>
+     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"/>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            display: flex;
+            min-height: 100vh;
+            background-color: #ebd8d0;
+        }
+
+        .sidebar {
+            width: 250px;
+            background-color:#582c4d;
+            color: white;
+            padding: 20px 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            position: fixed;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            padding: 0 20px 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .logo span {
+            color: #ebd8d0;
+        }
+
+        .nav-menu {
+            flex: 1;
+            padding: 20px 0;
+        }
+
+        .nav-item {
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .nav-item:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-item i {
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
+        }
+
+        .nav-item.active {
+            background-color: #ebd8d0;
+            color:#582c4d;
+        }
+
+        .user-profile {
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .user-profile img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 10px;
+            background-color: #fff;
+            object-fit: cover;
+        }
+
+        .user-info h4 {
+            font-size: 14px;
+            margin-bottom: 2px;
+        }
+
+        .user-info p {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        .main-content {
+            flex: 1;
+            margin-left: 250px;
+            padding: 20px;
+        }
+
+.header {
+    display: flex;
+    justify-content: center; /* centers children horizontally */
+    align-items: center;
+}
+        .search-bar {
+            flex: 1;
+            max-width: 500px;
+            position: relative;
+            
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 10px 15px 10px 40px;
+            border-radius: 20px;
+            border: 1px solid #ddd;
+            outline: none;
+            font-size: 14px;
+            
+        }
+
+        .search-bar i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #777;
+        }
+
+        .page-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .dashboard-cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background-color: #f2cfcf;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .card-title {
+            font-size: 14px;
+            color: #777;
+            margin-bottom: 10px;
+        }
+
+        .card-value {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .card-status {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-in-review {
+            background-color: #fff4e5;
+            color: #ffa726;
+        }
+
+        .status-approved {
+            background-color: #e6f7ee;
+            color: #2ecc71;
+        }
+
+        .status-pending {
+            background-color: #ebf5ff;
+            color: #3498db;
+        }
+
+        .status-declined {
+            background-color: #fde8e8;
+            color: #e74c3c;
+        }
+
+        .dashboard-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+        }
+
+       .graph-container {
+    background-color: #f2cfcf;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    height: 300px;
+    position: relative; /* Needed for Chart.js responsiveness */
+}
+
+        .tasks-container {
+            background-color: #f2cfcf;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .task-list {
+            list-style: none;
+        }
+
+        .task-item {
+            padding: 15px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .task-item:last-child {
+            border-bottom: none;
+        }
+
+        .task-name {
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+
+        .task-due {
+            font-size: 12px;
+            color: #777;
+        }
+
+        .submissions-container {
+            margin-top: 30px;
+        }
+
+        .submission-list {
+            list-style: none;
+        }
+
+        .submission-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .submission-name {
+            font-weight: 500;
+        }
+
+        .footer {
+            margin-top: 50px;
+            padding: 30px 0;
+            background-color: #2c3e50;
+            color: white;
+            text-align: center;
+        }
+
+        .footer-logo {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .footer-logo span {
+            color: #3498db;
+        }
+
+        .footer-tagline {
+            font-style: italic;
+            margin-bottom: 20px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            line-height: 1.5;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .footer-link-column {
+            margin: 0 30px;
+            text-align: left;
+        }
+
+        .footer-link-column h4 {
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .footer-link-column ul {
+            list-style: none;
+        }
+
+        .footer-link-column li {
+            margin-bottom: 5px;
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        .footer-link-column li:hover {
+            opacity: 1;
+            cursor: pointer;
+        }
+
+        .footer-social {
+            margin-bottom: 20px;
+        }
+
+        .footer-social a {
+            color: white;
+            margin: 0 10px;
+            font-size: 20px;
+        }
+
+        .footer-contact {
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+
+        .footer-legal {
+            font-size: 12px;
+            opacity: 0.7;
+            margin-top: 20px;
+        }
+
+        .footer-legal a {
+            color: white;
+            margin: 0 10px;
+        }
+        .submissions-container {
+    margin-top: 30px;
+}
+
+.submission-list {
+    list-style: none;
+}
+
+.submission-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.submission-name {
+    font-weight: 500;
+}
+footer {
+      background-color: #3e1c3a;
+      color: white;
+      padding: 40px 20px;
+    }
+
+    .footer-title {
+      font-weight: bold;
+      font-size: 18px;
+      margin-bottom: 10px;
+    }
+
+    .footer-tagline {
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .footer-links a {
+      color: white;
+      display: block;
+      margin-bottom: 5px;
+      text-decoration: none;
+    }
+
+    .footer-links a:hover {
+      color: #e2cfcf;
+    }
+
+    .footer-bottom {
+      border-top: 1px solid #71536a;
+      margin-top: 20px;
+      padding-top: 10px;
+      font-size: 12px;
+      text-align: center;
+    }
+    .progress-container {
+    width: 100%;
+    background-color: #e0e0e0;
+    border-radius: 20px;
+    margin-top: 10px;
+}
+
+.progress-bar {
+    height: 10px;
+    border-radius: 20px;
+    background-color: #582c4d;
+    width: 65%; /* Adjust this percentage to change progress */
+    transition: width 0.5s ease;
+}
+
+.progress-text {
+    font-size: 14px;
+    margin-top: 5px;
+    color: #582c4d;
+    font-weight: bold;
+}
+
+css
+.dashboard-cards {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr); /* Changed from 3 to 4 */
+    gap: 20px;
+    margin-bottom: 30px;
+}
+.page {
+    display: none; /* Hide all pages */
+}
+.page.active {
+    display: block; /* Show only the active page */
+}
+.project-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.project-card {
+    background: #f2cfcf;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    padding: 15px;
+    text-align: center;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.project-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+}
+
+.project-card img {
+    width: 100%;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    object-fit: cover;
+}
+
+.project-card h3 {
+    font-size: 18px;
+    margin-bottom: 8px;
+    color: #582c4d;
+}
+
+.project-card p {
+    font-size: 14px;
+    color: #555;
+    margin-bottom: 12px;
+}
+
+.btn-view {
+    background: #582c4d;
+    color: #fff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.3s ease;
+}
+
+.btn-view:hover {
+    background: #3a1830;
+}
+.task-list {
+    text-align: left;
+    padding-left: 20px; /* adds indentation */
+}
+#progressPage .tasks-container {
+    box-shadow: none;
+}
+/* Submission grid */
+.submission-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+
+/* Submission card */
+.submission-card {
+    background: #f2cfcf;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    text-align: left;
+}
+
+/* Task list */
+.submission-card ul {
+    padding-left: 0px;
+    margin: 10px 0;
+}
+
+/* Add submission button */
+.btn-submit {
+    margin-top: 10px;
+    padding: 8px 15px;
+    background: #582c4d;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: 0.3s ease;
+}
+.btn-submit:hover {
+    background: #7a3f65;
+}
+.evaluation-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    font-size: 16px;
+    background: #f2cfcf;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+}
+
+.evaluation-table th, .evaluation-table td {
+    border: 1px solid #c4bdbd;
+    padding: 12px 15px;
+    text-align: left;
+}
+
+.evaluation-table th {
+    background-color: #582c4d;
+    color: white;
+}
+
+.settings-card {
+    max-width: 750px;
+    margin: 20px auto;
+    background: #f2cfcf;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 3px 15px rgba(0,0,0,0.1);
+}
+
+.settings-card h3 {
+    margin: 20px 0 10px;
+    color: #582c4d;
+    font-size: 18px;
+}
+
+.setting-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 12px 0;
+    gap: 20px;
+}
+
+.setting-row label {
+    flex: 1;
+    font-weight: 500;
+    color: #333;
+}
+
+.setting-row input,
+.setting-row select {
+    flex: 2;
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 14px;
+    background-color: #ffffff;
+}
+
+hr {
+    margin: 20px 0;
+    border: none;
+    border-top: 1px solid #eee;
+}
+
+.settings-actions {
+    text-align: right;
+    margin-top: 20px;
+}
+
+.btn-update {
+    background: #582c4d;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 15px;
+    transition: background 0.3s;
+}
+
+.btn-update:hover {
+    background: #7a3a65;
+}
+.btn-password {
+    background: #582c4d;   /* green */
+    color: white;
+    padding: 8px 18px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.3s;
+    margin-top: 10px;
+}
+
+.btn-password:hover {
+    background: #7a3a65;
+}
+
+
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="logo">PROGRESSO<span>!</span></div>
+<div class="nav-menu">
+    <div class="nav-item active" data-page="dashboardPage">
+        <i class="fas fa-tachometer-alt"></i>
+        <span>Dashboard</span>
+    </div>
+    <div class="nav-item" data-page="projectPage">
+        <i class="fas fa-project-diagram"></i>
+        <span>Project Name</span>
+    </div>
+    <div class="nav-item" data-page="progressPage">
+        <i class="fas fa-chart-line"></i>
+        <span>Progress</span>
+    </div>
+    <div class="nav-item" data-page="submissionPage">
+        <i class="fas fa-file-upload"></i>
+        <span>Submissions</span>
+    </div>
+    <div class="nav-item" data-page="evaluationPage">
+        <i class="fas fa-clipboard-check"></i>
+        <span>Evaluations</span>
+    </div>
+    <div class="nav-item" data-page="settingsPage">
+        <i class="fas fa-cog"></i>
+        <span>Settings</span>
+    </div>
+    <div class="nav-item" data-page="logout">
+        <i class="fas fa-sign-out-alt"></i>
+        <span>Logout</span> 
+    </div>
+</div>
+
+        <div class="user-profile">
+            <img src="abiya.JPG" alt="User">
+            <div class="user-info">
+                <h4>Abiya Biju</h4>
+                <p>2360307</p>
+            </div>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <div class="header">
+           
+            <div class="search-bar">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="Search for anything">
+            </div>
+        </div>
+<div id="dashboardPage" class="page active">
+     <h1 class="page-title">Dashboard</h1>
+        <div class="dashboard-cards" >
+    <div class="card">
+        <div class="card-title">Project Name</div>
+        <div class="card-value">School Management System</div>
+    </div>
+    <div class="card">
+        <div class="card-title">Status</div>
+        <div class="card-value">In Review</div>
+        <span class="card-status status-in-review">In Review</span>
+    </div>
+    <div class="card">
+        <div class="card-title">Progress</div>
+        <div class="progress-container">
+            <div class="progress-bar"></div>
+        </div>
+        <div class="progress-text">65% Complete</div>
+    </div>
+    <div class="card">
+        <div class="card-title">Submissions</div>
+        <div class="card-value">3</div>
+    </div>
+</div>
+
+        <div class="dashboard-content">
+            <div class="graph-container">
+                <h3 class="section-title">Graph</h3>
+                <canvas id="progressChart" height="250"></canvas>
+            </div>
+            <div class="submissions-container">
+    <h3 class="section-title">Submissions</h3>
+    <ul class="submission-list">
+        <li class="submission-item">
+            <div class="submission-name">U/UX of home page</div>
+            <span class="card-status status-approved">Approved</span>
+        </li>
+        <li class="submission-item">
+            <div class="submission-name">U/UX of Login page</div>
+            <span class="card-status status-pending">Pending</span>
+        </li>
+        <li class="submission-item">
+            <div class="submission-name">U/UX of submission page</div>
+            <span class="card-status status-declined">Declined</span>
+        </li>
+    </ul>
+</div>
+            <div class="tasks-container">
+                <h3 class="section-title">Upcoming Tasks</h3>
+                <ul class="task-list">
+                    <li class="task-item">
+                        <div class="task-name">U/UX design of dashboard page</div>
+                        <div class="task-due">Due: 23 June 2025</div>
+                    </li>
+                    <li class="task-item">
+                        <div class="task-name">U/UX design of community page</div>
+                        <div class="task-due">Due: 25 June 2025</div>
+                    </li>
+                    <li class="task-item">
+                        <div class="task-name">U/UX design of attendance page</div>
+                        <div class="task-due">Due: 29 June 2025</div>
+                    </li>
+                </ul>
+            </div>
+</div>
+</div>
+
+    <!-- Projects Page -->
+ <div id="projectPage" class="page">
+    <h1 class="page-title">Projects</h1>
+    <div class="project-grid">
+        <div class="project-card">
+            <img src="project1.png" alt="Project 1">
+            <h3>School Management System</h3>
+            <p>A complete system to manage students, staff, attendance, and exams.</p>
+            <a href="ProjectDetails/project1.html" class="btn-view" style="color: #FFFFFF !important; text-decoration: none !important;">View More</a>
+        </div>
+        <div class="project-card">
+            <img src="project1.png" alt="Project 2">
+            <h3>E-Commerce Website</h3>
+            <p>An online platform for shopping with payment integration and cart system.</p>
+            <a href="project2.html" class="btn-view" style="color: #FFFFFF !important; text-decoration: none !important;">View More</a>
+        </div>
+        <div class="project-card">
+            <img src="project1.png" alt="Project 3">
+            <h3>Healthcare Portal</h3>
+            <p>Appointment booking, health records, and doctor-patient communication.</p>
+            <a href="project1.html" class="btn-view" style="color: #FFFFFF !important; text-decoration: none !important;">View More</a>
+        </div>
+        <div class="project-card">
+            <img src="project1.png" alt="Project 3">
+            <h3>Healthcare Portal</h3>
+            <p>Appointment booking, health records, and doctor-patient communication.</p>
+            <a href="project1.html" class="btn-view" style="color: #FFFFFF !important; text-decoration: none !important;">View More</a>
+        </div>
+        <div class="project-card">
+            <img src="project1.png" alt="Project 3">
+            <h3>Healthcare Portal</h3>
+            <p>Appointment booking, health records, and doctor-patient communication.</p>
+            <a href="project1.html" class="btn-view" style="color: #FFFFFF !important; text-decoration: none !important;">View More</a>
+        </div>
+        <div class="project-card">
+            <img src="project1.png" alt="Project 3">
+            <h3>Healthcare Portal</h3>
+            <p>Appointment booking, health records, and doctor-patient communication.</p>
+            <a href="project1.html" class="btn-view" style="color: #FFFFFF !important; text-decoration: none !important;">View More</a>
+        </div>
+        <div class="project-card">
+            <img src="project1.png" alt="Project 3">
+            <h3>Healthcare Portal</h3>
+            <p>Appointment booking, health records, and doctor-patient communication.</p>
+            <a href="project1.html" class="btn-view" style="color: #FFFFFF !important; text-decoration: none !important;">View More</a>
+        </div>
+        <div class="project-card">
+            <img src="project1.png" alt="Project 4">
+            <h3>Finance Tracker</h3>
+            <p>Personal finance management app with expense tracking and analytics.</p>
+            <a href="project1.html" class="btn-view" style="color: #FFFFFF !important; text-decoration: none !important;">View More</a>
+        </div>
+    </div>
+</div>
+
+    <!-- Progress Page -->
+<!-- Progress Page -->
+<div id="progressPage" class="page">
+    <h1 class="page-title">Project Progress</h1>
+
+    <div class="project-grid">
+        <!-- Project 1 -->
+        <div class="project-card">
+            <h3>School Management System</h3>
+            
+            <!-- Progress bar -->
+            <div class="progress-container">
+                <div class="progress-bar" style="width: 70%;"></div>
+            </div>
+            <div class="progress-text">70% Complete</div>
+
+            <!-- Tasks -->
+            <div class="tasks-container">
+                <h6 style="color: green">Completed Tasks</h6>
+                <ul class="task-list">
+                    <li class="task-item">Database schema design</li>
+                    <li class="task-item">Login & authentication module</li>
+                </ul>
+
+                <h6 style="color: rgb(150, 9, 9)">Pending Tasks</h6>
+                <ul class="task-list">
+                    <li class="task-item">Attendance module</li>
+                    <li class="task-item">Exam results dashboard</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Project 2 -->
+        <div class="project-card">
+            <h3>E-Commerce Website</h3>
+            <div class="progress-container">
+                <div class="progress-bar" style="width: 45%;"></div>
+            </div>
+            <div class="progress-text">45% Complete</div>
+
+            <div class="tasks-container">
+                <h6 style="color: green">Completed Tasks</h6>
+                <ul class="task-list">
+                    <li class="task-item">Homepage UI design</li>
+                    <li class="task-item">Product catalog setup</li>
+                </ul>
+
+                <h6 style="color: rgb(150, 9, 9)">Pending Tasks</h6>
+                <ul class="task-list">
+                    <li class="task-item">Payment gateway integration</li>
+                    <li class="task-item">Cart & checkout process</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Project 3 -->
+        <div class="project-card">
+            <h3>Healthcare Portal</h3>
+            <div class="progress-container">
+                <div class="progress-bar" style="width: 55%;"></div>
+            </div>
+            <div class="progress-text">55% Complete</div>
+
+            <div class="tasks-container">
+                <h6 style="color: green">Completed Tasks</h6>
+                <ul class="task-list">
+                    <li class="task-item">Appointment booking UI</li>
+                    <li class="task-item">User registration & login</li>
+                </ul>
+
+                <h6 style="color: rgb(150, 9, 9)">Pending Tasks</h6>
+                <ul class="task-list">
+                    <li class="task-item">Medical records module</li>
+                    <li class="task-item">Doctor-patient chat system</li>
+                </ul>
+            </div>
+        </div>
+        <div class="project-card">
+            <h3>Healthcare Portal</h3>
+            <div class="progress-container">
+                <div class="progress-bar" style="width: 55%;"></div>
+            </div>
+            <div class="progress-text">55% Complete</div>
+
+            <div class="tasks-container">
+                <h6 style="color: green">Completed Tasks</h6>
+                <ul class="task-list">
+                    <li class="task-item">Appointment booking UI</li>
+                    <li class="task-item">User registration & login</li>
+                </ul>
+
+                <h6 style="color: rgb(150, 9, 9)">Pending Tasks</h6>
+                <ul class="task-list">
+                    <li class="task-item">Medical records module</li>
+                    <li class="task-item">Doctor-patient chat system</li>
+                </ul>
+            </div>
+        </div>
+        <div class="project-card">
+            <h3>Healthcare Portal</h3>
+            <div class="progress-container">
+                <div class="progress-bar" style="width: 55%;"></div>
+            </div>
+            <div class="progress-text">55% Complete</div>
+
+            <div class="tasks-container">
+                <h6 style="color: green">Completed Tasks</h6>
+                <ul class="task-list">
+                    <li class="task-item">Appointment booking UI</li>
+                    <li class="task-item">User registration & login</li>
+                </ul>
+
+                <h6 style="color: rgb(150, 9, 9)">Pending Tasks</h6>
+                <ul class="task-list">
+                    <li class="task-item">Medical records module</li>
+                    <li class="task-item">Doctor-patient chat system</li>
+                </ul>
+            </div>
+        </div>
+        <div class="project-card">
+            <h3>Healthcare Portal</h3>
+            <div class="progress-container">
+                <div class="progress-bar" style="width: 55%;"></div>
+            </div>
+            <div class="progress-text">55% Complete</div>
+
+            <div class="tasks-container">
+                <h6 style="color: green">Completed Tasks</h6>
+                <ul class="task-list">
+                    <li class="task-item">Appointment booking UI</li>
+                    <li class="task-item">User registration & login</li>
+                </ul>
+
+                <h6 style="color: rgb(150, 9, 9)">Pending Tasks</h6>
+                <ul class="task-list">
+                    <li class="task-item">Medical records module</li>
+                    <li class="task-item">Doctor-patient chat system</li>
+                </ul>
+            </div>
+        </div>
+        <div class="project-card">
+            <h3>Healthcare Portal</h3>
+            <div class="progress-container">
+                <div class="progress-bar" style="width: 55%;"></div>
+            </div>
+            <div class="progress-text">55% Complete</div>
+
+            <div class="tasks-container">
+                <h6 style="color: green">Completed Tasks</h6>
+                <ul class="task-list">
+                    <li class="task-item">Appointment booking UI</li>
+                    <li class="task-item">User registration & login</li>
+                </ul>
+
+                <h6 style="color: rgb(150, 9, 9)">Pending Tasks</h6>
+                <ul class="task-list">
+                    <li class="task-item">Medical records module</li>
+                    <li class="task-item">Doctor-patient chat system</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Project 4 -->
+        <div class="project-card">
+            <h3>Finance Tracker</h3>
+            <div class="progress-container">
+                <div class="progress-bar" style="width: 80%;"></div>
+            </div>
+            <div class="progress-text">80% Complete</div>
+
+            <div class="tasks-container">
+                <h6 style="color: green">Completed Tasks</h6>
+                <ul class="task-list">
+                    <li class="task-item">Expense input form</li>
+                    <li class="task-item">Basic analytics graph</li>
+                </ul>
+
+                <h6 style="color: rgb(150, 9, 9)">Pending Tasks</h6>
+                <ul class="task-list">
+                    <li class="task-item">Monthly budget planner</li>
+                    <li class="task-item">Export to Excel/CSV</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Submission Page -->
+<div id="submissionPage" class="page">
+    <h1 class="page-title">Submissions</h1>
+    <div class="submission-grid">
+
+        <!-- Project 1 -->
+        <div class="submission-card">
+            <h4>School Management System</h4>
+
+            <ul class="task-list">
+                <li>Database schema design</li>
+                <li>Login & authentication module</li>
+            </ul>
+            <button class="btn-submit">Add Submission</button>
+        </div>
+
+        <!-- Project 2 -->
+        <div class="submission-card">
+            <h4>E-Commerce Website</h4>
+            <ul class="task-list">
+                <li>Product listing page</li>
+                <li>User authentication</li>
+            </ul>
+            <button class="btn-submit">Add Submission</button>
+        </div>
+
+        <!-- Project 3 -->
+        <div class="submission-card">
+            <h4>Healthcare Portal</h4>
+            <ul class="task-list">
+                <li>Doctor registration</li>
+                <li>Patient profile management</li>
+            </ul>
+            <button class="btn-submit">Add Submission</button>
+        </div>
+        <div class="submission-card">
+            <h4>Healthcare Portal</h4>
+            <ul class="task-list">
+                <li>Doctor registration</li>
+                <li>Patient profile management</li>
+            </ul>
+            <button class="btn-submit">Add Submission</button>
+        </div>
+        <div class="submission-card">
+            <h4>Healthcare Portal</h4>
+            <ul class="task-list">
+                <li>Doctor registration</li>
+                <li>Patient profile management</li>
+            </ul>
+            <button class="btn-submit">Add Submission</button>
+        </div>
+        <div class="submission-card">
+            <h4>Healthcare Portal</h4>
+            <ul class="task-list">
+                <li>Doctor registration</li>
+                <li>Patient profile management</li>
+            </ul>
+            <button class="btn-submit">Add Submission</button>
+        </div>
+        <div class="submission-card">
+            <h4>Healthcare Portal</h4>
+            <ul class="task-list">
+                <li>Doctor registration</li>
+                <li>Patient profile management</li>
+            </ul>
+            <button class="btn-submit">Add Submission</button>
+        </div>
+
+        <!-- Project 4 -->
+        <div class="submission-card">
+            <h4>Finance Tracker</h4>
+            <ul class="task-list">
+                <li>Expense tracking module</li>
+                <li>Basic analytics dashboard</li>
+            </ul>
+            <button class="btn-submit">     Add Submission</button>
+        </div>
+
+    </div>
+</div>
+
+
+<!-- Evaluation Page -->
+<div id="evaluationPage" class="page">
+    <h1 class="page-title">📊 Project Evaluation</h1>
+
+    <table class="evaluation-table">
+        <thead>
+            <tr>
+                <th>Project Name</th>
+                <th>Completed Task</th>
+                <th>Marks (out of 10)</th>
+                <th>Faculty</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Project 1 -->
+            <tr>
+                <td rowspan="2">School Management System</td>
+                <td>Database schema design</td>
+                <td>8/10</td>
+                <td rowspan="2">Dr. John Mathew</td>
+            </tr>
+            <tr>
+                <td>Login & authentication module</td>
+                <td>9/10</td>
+            </tr>
+
+            <!-- Project 2 -->
+            <tr>
+                <td rowspan="2">E-Commerce Website</td>
+                <td>Product listing page</td>
+                <td>7/10</td>
+                <td rowspan="2">Prof. Anita Sharma</td>
+            </tr>
+            <tr>
+                <td>User authentication</td>
+                <td>8/10</td>
+            </tr>
+
+            <!-- Project 3 -->
+            <tr>
+                <td rowspan="2">Healthcare Portal</td>
+                <td>Doctor registration</td>
+                <td>9/10</td>
+                <td rowspan="2">Dr. Ravi Kumar</td>
+            </tr>
+            <tr>
+                <td>Patient profile management</td>
+                <td>8/10</td>
+            </tr>
+
+            <!-- Project 4 -->
+            <tr>
+                <td rowspan="2">Finance Tracker</td>
+                <td>Expense tracking module</td>
+                <td>7/10</td>
+                <td rowspan="2">Prof. Meera Iyer</td>
+            </tr>
+            <tr>
+                <td>Basic analytics dashboard</td>
+                <td>9/10</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+<!-- Settings Page -->
+<div id="settingsPage" class="page">
+    <h1 class="page-title">⚙️ Settings</h1>
+
+    <div class="settings-card">
+
+        <!-- Profile -->
+        <h3><b>Profile</b></h3>
+        <div class="setting-row">
+            <label>Full Name</label>
+            <input type="text" value="John Doe">
+        </div>
+        <div class="setting-row">
+            <label>Email</label>
+            <input type="email" value="john@example.com">
+        </div>
+        <div class="setting-row">
+            <label>Phone</label>
+            <input type="text" value="+91 9876543210">
+        </div>
+        <hr>
+
+        <!-- Password -->
+        <h3><b>Password</b></h3>
+        <div class="setting-row">
+            <label>Current Password</label>
+            <input type="password" placeholder="********">
+        </div>
+        <div class="setting-row">
+            <label>New Password</label>
+            <input type="password" placeholder="********">
+        </div>
+        <div class="setting-row">
+            <label>Confirm Password</label>
+            <input type="password" placeholder="********">
+        </div>
+        <div class="settings-actions">
+    <button class="btn-password">Change Password</button>
+</div>
+        <hr>
+
+        <!-- Preferences -->
+        <h3><b>Preferences</b></h3>
+        <div class="setting-row">
+            <label>Theme</label>
+            <select>
+                <option>Light Mode</option>
+                <option>Dark Mode</option>
+                <option>System Default</option>
+            </select>
+        </div>
+        <div class="setting-row">
+            <label>Notifications</label>
+            <select>
+                <option>Enabled</option>
+                <option>Disabled</option>
+            </select>
+        </div>
+
+        <!-- Save Button -->
+        <div class="settings-actions">
+            <button class="btn-update">💾 Save All Changes</button>
+        </div>
+    </div>
+</div>
+
+
+
+<script>
+    // Get the canvas element
+    const ctx = document.getElementById('progressChart').getContext('2d');
+    
+    // Create the chart
+    const progressChart = new Chart(ctx, {
+        type: 'line', // or 'bar' if you prefer
+        data: {
+            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+            datasets: [{
+                label: 'Project Completion %',
+                data: [10, 25, 40, 55, 70, 85],
+                backgroundColor: 'rgba(88, 44, 77, 0.2)',
+                borderColor: 'rgba(88, 44, 77, 1)',
+                borderWidth: 2,
+                tension: 0.4, // Makes the line curved
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'top',
+                },
+                tooltip: {
+                    mode: 'index',
+                    intersect: false,
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100,
+                    ticks: {
+                        callback: function(value) {
+                            return value + '%';
+                        }
+                    }
+                }
+            }
+        }
+    });
+</script>
+<script>
+    const navItems = document.querySelectorAll(".nav-item");
+    const pages = document.querySelectorAll(".page");
+
+    navItems.forEach(item => {
+        item.addEventListener("click", () => {
+            // remove active highlight
+            navItems.forEach(i => i.classList.remove("active"));
+            item.classList.add("active");
+
+            const targetPage = item.getAttribute("data-page");
+
+            // hide all pages
+            pages.forEach(p => p.classList.remove("active"));
+
+            // show clicked page (except logout, handled separately)
+            if (targetPage !== "logout") {
+                document.getElementById(targetPage).classList.add("active");
+            }
+        });
+    });
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const logoutBtn = document.querySelector('.nav-item[data-page="logout"]');
+
+    logoutBtn.addEventListener("click", function () {
+        let confirmLogout = confirm("Are you sure you want to logout?");
+        if (confirmLogout) {
+            // Redirect to login/signup page
+            window.location.href = "auth.html"; // change to your actual login/signup page path
+        }
+    });
+});
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const pages = document.querySelectorAll(".page");
+    const navItems = document.querySelectorAll(".nav-item");
+
+    function showPage(pageId) {
+        // hide all pages
+        pages.forEach(p => p.classList.remove("active"));
+        // remove active class from all nav-items
+        navItems.forEach(item => item.classList.remove("active"));
+
+        // show the requested page
+        const page = document.getElementById(pageId);
+        if (page) page.classList.add("active");
+
+        // highlight the correct nav item
+        const activeItem = document.querySelector(`.nav-item[data-page="${pageId}"]`);
+        if (activeItem) activeItem.classList.add("active");
+    }
+
+    // Handle clicks on sidebar
+    navItems.forEach(item => {
+        item.addEventListener("click", () => {
+            const pageId = item.getAttribute("data-page");
+            showPage(pageId);
+        });
+    });
+
+    // Check URL hash (e.g., #projectPage)
+    const hash = window.location.hash.substring(1); // remove '#'
+    if (hash) {
+        showPage(hash);
+    } else {
+        showPage("dashboardPage"); // default
+    }
+});
+</script>
+
+
+
+   
+</body>
+</html> 

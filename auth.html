@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Progresso Login</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    body {
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+  .navbar {
+      background-color: rgba(88, 44, 77);
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items:flex-start ;
+      transition: background-color 0.5s ease;
+      height: 50px
+    }
+
+    .navbar a {
+      color: white;
+      text-decoration: none;
+      margin-left: 1rem;
+      border-left: 1px solid #fff;
+      padding-left: 1rem;
+    }
+
+    .navbar a:first-of-type {
+  border-left: none;     
+  padding-left: 0;        
+  margin-left: 0;         
+}
+
+    .container {
+      display: flex;
+      height: 100vh;
+    }
+
+    .left, .right {
+      flex: 1;
+      padding: 3rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .left {
+         display: flex;
+  align-items: center;
+  justify-content: center;
+      background-color: #D5B9B2;
+    }
+
+    .right {
+         display: flex;
+  align-items: center;
+  justify-content: center;
+      background-color: #A26769;
+    }
+
+    .content-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;}
+
+    .right h3 {
+  margin-top: px;  /* Move it up */
+    }
+
+    h2{
+       margin-top: 0.05rem;
+      color: #fff;
+      font-size: 1.25rem;
+      font-family:'Noto Serif';
+    }
+    h3{
+        margin: 1rem 0;
+        margin-top: 50px;
+        margin-bottom: 10px;
+        font-size:30px;
+      color: rgba(88, 44, 77);
+    }
+
+    input {
+      width: 350px;
+      height: 40px;
+      padding: 0.75rem;
+      margin: 0.5rem 0;
+      border: none;
+      border-radius: 5px;
+      background-color: #ECE2D0;
+    }
+
+    button {
+        
+        align-items: center;
+        justify-content: center;
+      padding: 0;
+      width: 250px;
+      height: 40px;
+      background-color: #ECE2D0;
+      color: #582C4D;
+      font-weight: bold;
+      font-size: 15px;
+      border: none;
+      border-radius: 10px;
+      margin-top: 1rem;
+      cursor: pointer;
+      
+      transition: all 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #ECE2D0;
+      transform: scale(1.05);
+    }
+
+    .social-icons {
+        display: flex;
+  justify-content: center; /* horizontally centers the icons */
+  align-items: center;     /* vertically aligns them (if needed) */
+  gap: 1rem;
+  margin: 1rem auto;       /* auto left/right margin to center the container */
+  width: fit-content;
+    }
+      .social-icons:hover {
+      transform: scale(1.05);
+    }
+
+    .social-icons img {
+      width: 32px;
+      cursor: pointer;
+      
+    }
+
+    .form {
+      width: 50%;
+      text-align: center;
+    }
+
+    .signup-form input:disabled {
+       background-color: #ECE2D0;
+  opacity: 0.5;              /* Makes it look dimmed */
+  pointer-events: none;  
+    }
+
+    .split-line {
+      margin: 1rem 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #8c6e6e;
+    }
+
+    .split-line::before, .split-line::after {
+      content: '';
+      flex: 1;
+      border-bottom: 1px solid #8c6e6e;
+      margin: 0 1rem;
+    }
+
+    .small-text {
+        margin-top: -5px;
+        margin-bottom: 30px;
+      font-size: 1rem;
+      color: rgba(88, 44, 77);
+      
+    }
+
+    .row {
+       display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: #814e4e;
+    }
+
+    .row a{
+        text-decoration: none;
+  color: #814e4e;
+    }
+
+    .sign-in-btn {
+  background-color:rgba(88, 44, 77);  /* new background color */
+  color: #ECE2D0;             /* text color */
+}
+.sign-in-btn:hover {
+  background-color: #6e3a60;  /* hover effect */
+}
+
+  </style>
+</head>
+<body>
+  <div class="navbar">
+    <h2>PROGRESSO !</h2>
+    <div>
+      <a href="code.html">Home</a>
+      <a href="#">Sign up</a>
+    </div>
+  </div>
+
+  <div class="container">
+    <!-- Left - Login -->
+    <div class="left">
+         <div class="content-wrapper">
+      <button>Log In</button>
+      <div class="form">
+        <h3>Login to Your Account</h3>
+        <p class="small-text">login using social networks</p>
+        <div class="social-icons">
+          <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg" alt="Google">
+          <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/github/github-original.svg" alt="GitHub">
+          <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linkedin/linkedin-original.svg" alt="LinkedIn">
+        </div>
+        <div class="split-line">OR</div>
+<input type="text" id="loginUsername" placeholder="Username" />
+<input type="password" id="loginPassword" placeholder="Password" />
+
+        <div class="row">
+          <label><input type="checkbox" checked /> Remember</label>
+          <a href="#" class="small-text">Forgot Password?</a>
+        </div>
+        <button class="sign-in-btn" onclick="login()">Sign In</button>
+      </div>
+      </div>
+    </div>
+
+    <!-- Right - Sign Up -->
+<!-- Right - Sign Up -->
+<div class="right">
+  <div class="content-wrapper">
+    <button onclick="enableSignup()">Sign Up</button>
+    <div class="form signup-form">
+      <h3>New Here ?</h3>
+      <p class="small-text">sign up and discover a great amount of new opportunity</p>
+      <input type="text" id="signupUsername" placeholder="Choose a Username" disabled />
+      <input type="email" id="signupEmail" placeholder="Your email address" disabled />
+      <input type="password" id="signupPassword" placeholder="Create a Password" disabled />
+      <button class="sign-in-btn" onclick="signup()">Create Account</button>
+    </div>
+  </div>
+</div>
+
+
+  <script>
+    function enableSignup() {
+      const fields = document.querySelectorAll('.signup-form input');
+      fields.forEach(field => {
+        field.disabled = false;
+      });
+    }
+  </script>
+  <script>
+async function signup() {
+    const username = document.getElementById("signupUsername").value;
+    const email = document.getElementById("signupEmail").value;
+    const password = document.getElementById("signupPassword").value;
+
+    const res = await fetch("http://localhost:5000/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, email, password })
+    });
+
+    alert(await res.text());
+}
+
+async function login() {
+    const username = document.getElementById("loginUsername").value;
+    const password = document.getElementById("loginPassword").value;
+
+    console.log("Trying to login with:", username, password);
+
+    try {
+        const res = await fetch("http://localhost:5000/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username, password })
+        });
+
+        const message = await res.text();
+        console.log("Server response:", message);
+
+        if (message === "Login successful") {
+            alert("Welcome!");
+            window.location.href = "dashboard.html";
+        } else {
+            alert(message);
+        }
+    } catch (err) {
+        console.error("Login error:", err);
+    }
+}
+
+</script>
+
+</body>
+</html>
