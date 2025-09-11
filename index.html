@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Progresso - Project Progress Management</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #582c4d 0%, #ebd8d0 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .welcome-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            padding: 40px;
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+        }
+
+        .logo {
+            font-size: 48px;
+            font-weight: bold;
+            color: #582c4d;
+            margin-bottom: 20px;
+        }
+
+        .logo span {
+            color: #ebd8d0;
+        }
+
+        .welcome-text {
+            font-size: 18px;
+            color: #666;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .btn-get-started {
+            background: #582c4d;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-get-started:hover {
+            background: #3a1830;
+        }
+
+        .features {
+            margin-top: 30px;
+            text-align: left;
+        }
+
+        .feature {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            color: #666;
+        }
+
+        .feature i {
+            color: #582c4d;
+            margin-right: 10px;
+            width: 20px;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="welcome-container">
+        <div class="logo">PROGRESSO<span>!</span></div>
+        <p class="welcome-text">
+            Welcome to Progresso - Your comprehensive project progress management system. 
+            Track projects, manage subtasks, and monitor student progress with ease.
+        </p>
+        
+        <a href="auth.html" class="btn-get-started">
+            <i class="fas fa-rocket"></i> Get Started
+        </a>
+
+        <div class="features">
+            <div class="feature">
+                <i class="fas fa-users"></i>
+                <span>Student & Faculty Management</span>
+            </div>
+            <div class="feature">
+                <i class="fas fa-project-diagram"></i>
+                <span>Project Tracking & Progress Monitoring</span>
+            </div>
+            <div class="feature">
+                <i class="fas fa-tasks"></i>
+                <span>Subtask Management & Evaluation</span>
+            </div>
+            <div class="feature">
+                <i class="fas fa-chart-line"></i>
+                <span>Analytics & Performance Insights</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Check if user is already logged in and redirect accordingly
+        document.addEventListener('DOMContentLoaded', function() {
+            const userData = localStorage.getItem('user');
+            if (userData) {
+                const user = JSON.parse(userData);
+                if (user.role === 'student') {
+                    window.location.href = 'student-dashboard.html';
+                } else if (user.role === 'faculty') {
+                    window.location.href = 'faculty-dashboard.html';
+                } else {
+                    window.location.href = 'dashboard.html';
+                }
+            }
+        });
+    </script>
+</body>
+</html>
