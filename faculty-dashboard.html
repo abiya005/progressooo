@@ -1070,7 +1070,7 @@
                                     </div>
                                     ${subtask.feedback ? `<div class="subtask-feedback" style="font-size: 11px; color: #888; font-style: italic; background: #f8f9fa; padding: 5px; border-radius: 4px; margin-top: 5px;">${subtask.feedback}</div>` : ''}
                                     <div class="subtask-actions" style="margin-top: 8px;">
-                                        <button class="btn-evaluate" onclick="openEvaluationModal(${subtask.id})">
+                                        <button class="btn-evaluate" onclick="openEvaluationModal('${subtask.id}')">
                                             ${subtask.marks ? 'Update Evaluation' : 'Evaluate'}
                                         </button>
                                     </div>
@@ -1116,7 +1116,7 @@
                     <td><span class="card-status status-${subtask.status}">${subtask.status}</span></td>
                     <td>${subtask.feedback || 'No feedback provided'}</td>
                     <td>
-                        <button class="btn-evaluate" onclick="openEvaluationModal(${subtask.id})">
+                        <button class="btn-evaluate" onclick="openEvaluationModal('${subtask.id}')">
                             ${subtask.marks ? 'Update' : 'Evaluate'}
                         </button>
                     </td>
@@ -1188,7 +1188,7 @@
                                     <div class="subtask-description">${subtask.description}</div>
                                     ${subtask.feedback ? `<div class="subtask-feedback" style="font-size: 10px; color: #888; font-style: italic;">${subtask.feedback}</div>` : ''}
                                     <div class="subtask-actions">
-                                        <button class="btn-evaluate" onclick="openEvaluationModal(${subtask.id})">Evaluate</button>
+                                        <button class="btn-evaluate" onclick="openEvaluationModal('${subtask.id}')">Evaluate</button>
                                     </div>
                                 </div>
                             `).join('')}
@@ -1328,17 +1328,24 @@
         }
 
         function openEvaluationModal(subtaskId) {
+            console.log('Opening evaluation modal for subtask:', subtaskId);
+            console.log('Available subtasks:', allSubtasks.length);
+            
             const modal = document.getElementById('evaluationModal');
             const subtask = allSubtasks.find(s => s.id === subtaskId);
+            
+            console.log('Found subtask:', subtask);
             
             if (subtask) {
                 document.getElementById('evaluationSubtaskId').value = subtaskId;
                 document.getElementById('evaluationMarks').value = subtask.marks || '';
                 document.getElementById('evaluationStatus').value = subtask.status || 'pending';
                 document.getElementById('evaluationFeedback').value = subtask.feedback || '';
+                modal.style.display = 'block';
+            } else {
+                console.error('Subtask not found with ID:', subtaskId);
+                alert('Error: Subtask not found. Please refresh the page and try again.');
             }
-
-            modal.style.display = 'block';
         }
 
         function updateAssignProjectPage() {
