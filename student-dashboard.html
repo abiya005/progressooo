@@ -582,6 +582,36 @@
         </div>
     </div>
 
+    <!-- Update Progress Modal -->
+    <div id="updateProgressModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Update Progress</h3>
+                <span class="close">&times;</span>
+            </div>
+            <form id="updateProgressForm">
+                <input type="hidden" id="updateSubtaskId">
+                <div class="form-group">
+                    <label for="updateSubtaskTitle">Subtask:</label>
+                    <input type="text" id="updateSubtaskTitle" readonly style="background-color: #f5f5f5;">
+                </div>
+                <div class="form-group">
+                    <label for="updateStatus">Status:</label>
+                    <select id="updateStatus" required>
+                        <option value="pending">Pending</option>
+                        <option value="in-progress">In Progress</option>
+                        <option value="completed">Completed</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="updateDescription">Update Description:</label>
+                    <textarea id="updateDescription" rows="4" placeholder="Describe your progress or any updates..."></textarea>
+                </div>
+                <button type="submit" class="btn-submit">Update Progress</button>
+            </form>
+        </div>
+    </div>
+
     <script>
         // Global variables
         let currentUser = null;
@@ -799,6 +829,11 @@
                                     ${subtask.due_date ? ` | Due: ${subtask.due_date}` : ''}
                                 </div>
                                 ${subtask.feedback ? `<div class="subtask-feedback">${subtask.feedback}</div>` : ''}
+                                <div style="margin-top: 8px;">
+                                    <button class="btn-add-subtask" onclick="openUpdateProgressModal('${subtask.id}', '${subtask.title}', '${subtask.status}', '${subtask.description || ''}')" style="font-size: 12px; padding: 6px 12px;">
+                                        Update Progress
+                                    </button>
+                                </div>
                             </div>
                         `).join('')}
                     </div>
@@ -853,6 +888,11 @@
                                     ${subtask.evaluated_at ? ` | Evaluated: ${new Date(subtask.evaluated_at).toLocaleDateString()}` : ''}
                                 </div>
                                 ${subtask.feedback ? `<div class="subtask-feedback">${subtask.feedback}</div>` : ''}
+                                <div style="margin-top: 8px;">
+                                    <button class="btn-add-subtask" onclick="openUpdateProgressModal('${subtask.id}', '${subtask.title}', '${subtask.status}', '${subtask.description || ''}')" style="font-size: 12px; padding: 6px 12px;">
+                                        Update Progress
+                                    </button>
+                                </div>
                             </div>
                         `).join('')}
                     </div>
@@ -903,16 +943,25 @@
             });
 
             // Add subtask modal
-            const modal = document.getElementById('addSubtaskModal');
-            const closeBtn = document.querySelector('.close');
-            const form = document.getElementById('addSubtaskForm');
+            const addSubtaskModal = document.getElementById('addSubtaskModal');
+            const addSubtaskCloseBtn = addSubtaskModal.querySelector('.close');
+            const addSubtaskForm = document.getElementById('addSubtaskForm');
 
-            closeBtn.onclick = () => modal.style.display = 'none';
+            addSubtaskCloseBtn.onclick = () => addSubtaskModal.style.display = 'none';
+            
+            // Update progress modal
+            const updateProgressModal = document.getElementById('updateProgressModal');
+            const updateProgressCloseBtn = updateProgressModal.querySelector('.close');
+            const updateProgressForm = document.getElementById('updateProgressForm');
+
+            updateProgressCloseBtn.onclick = () => updateProgressModal.style.display = 'none';
+            
             window.onclick = (event) => {
-                if (event.target === modal) modal.style.display = 'none';
+                if (event.target === addSubtaskModal) addSubtaskModal.style.display = 'none';
+                if (event.target === updateProgressModal) updateProgressModal.style.display = 'none';
             };
 
-            form.addEventListener('submit', async (e) => {
+            addSubtaskForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 
                 const formData = {
@@ -935,8 +984,8 @@
                     
                     if (response.ok) {
                         alert('Subtask added successfully!');
-                        modal.style.display = 'none';
-                        form.reset();
+                        addSubtaskModal.style.display = 'none';
+                        addSubtaskForm.reset();
                         loadDashboardData(); // Reload data
                     } else {
                         alert('Error adding subtask: ' + (result.message || 'Unknown error'));
@@ -944,6 +993,40 @@
                 } catch (error) {
                     console.error('Error adding subtask:', error);
                     alert('Error adding subtask: ' + error.message);
+                }
+            });
+
+            updateProgressForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const subtaskId = document.getElementById('updateSubtaskId').value;
+                const formData = {
+                    status: document.getElementById('updateStatus').value,
+                    description: document.getElementById('updateDescription').value
+                };
+
+                try {
+                    const response = await fetch(`/api/subtask/${subtaskId}/status`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(formData)
+                    });
+
+                    const result = await response.json();
+                    
+                    if (response.ok) {
+                        alert('Progress updated successfully!');
+                        updateProgressModal.style.display = 'none';
+                        updateProgressForm.reset();
+                        loadDashboardData(); // Reload data
+                    } else {
+                        alert('Error updating progress: ' + (result.message || 'Unknown error'));
+                    }
+                } catch (error) {
+                    console.error('Error updating progress:', error);
+                    alert('Error updating progress: ' + error.message);
                 }
             });
         }
@@ -961,6 +1044,18 @@
                 if (project.id === projectId) option.selected = true;
                 projectSelect.appendChild(option);
             });
+
+            modal.style.display = 'block';
+        }
+
+        function openUpdateProgressModal(subtaskId, title, currentStatus, currentDescription) {
+            const modal = document.getElementById('updateProgressModal');
+            
+            // Populate form fields
+            document.getElementById('updateSubtaskId').value = subtaskId;
+            document.getElementById('updateSubtaskTitle').value = title;
+            document.getElementById('updateStatus').value = currentStatus;
+            document.getElementById('updateDescription').value = currentDescription;
 
             modal.style.display = 'block';
         }
@@ -1049,6 +1144,11 @@
                                     ${subtask.evaluated_at ? ` | Evaluated: ${new Date(subtask.evaluated_at).toLocaleDateString()}` : ''}
                                 </div>
                                 ${subtask.feedback ? `<div class="subtask-feedback">${subtask.feedback}</div>` : ''}
+                                <div style="margin-top: 8px;">
+                                    <button class="btn-add-subtask" onclick="openUpdateProgressModal('${subtask.id}', '${subtask.title}', '${subtask.status}', '${subtask.description || ''}')" style="font-size: 12px; padding: 6px 12px;">
+                                        Update Progress
+                                    </button>
+                                </div>
                             </div>
                         `).join('')}
                     </div>

@@ -1,13 +1,27 @@
+// Load environment variables
+require('dotenv').config();
+
 const express = require("express");
 const { createClient } = require('@supabase/supabase-js');
 const bcrypt = require("bcryptjs");
 const bodyParser = require("body-parser");
 const cors = require("cors");
-const config = require('./config');
 
 const app = express();
 app.use(bodyParser.json());
 app.use(cors());
+
+// ✅ Configuration (inline config instead of requiring external file)
+const config = {
+    server: {
+        port: process.env.PORT || 3000,
+        environment: process.env.NODE_ENV || 'development'
+    },
+    supabase: {
+        url: process.env.SUPABASE_URL,
+        anonKey: process.env.SUPABASE_ANON_KEY
+    }
+};
 
 // ✅ Connect to Supabase Database
 let supabase = null;
@@ -16,14 +30,18 @@ let dbConnected = false;
 // Initialize Supabase connection
 async function initializeSupabase() {
     try {
+        if (!config.supabase.url || !config.supabase.anonKey) {
+            throw new Error('Missing Supabase configuration. Check your .env file.');
+        }
+
         supabase = createClient(config.supabase.url, config.supabase.anonKey);
         
-        // Test connection
+        // Test connection with a simple query
         const { data, error } = await supabase
             .from('users')
-            .select('count')
+            .select('id')
             .limit(1);
-            
+        
         if (!error) {
             dbConnected = true;
             console.log("✅ Connected to Supabase Database successfully!");
@@ -44,6 +62,15 @@ async function initializeSupabase() {
 
 // Initialize connection
 initializeSupabase();
+
+// Health and status endpoints
+app.get('/health', (req, res) => {
+    res.status(200).json({ status: 'ok', uptime: process.uptime() });
+});
+
+app.get('/db-status', (req, res) => {
+    res.status(200).json({ connected: dbConnected, url: config.supabase.url });
+});
 
 // Mock data for fallback
 let mockUsers = [
@@ -73,662 +100,181 @@ let mockUsers = [
     }
 ];
 
-let mockProjects = [
-    {
-        id: "1",
-        student_id: "1",
-        title: "E-Commerce Website",
-        description: "A full-stack e-commerce platform with React and Node.js",
-        status: "active",
-        due_date: "2024-03-15",
-        created_at: "2024-01-15T10:00:00Z"
-    },
-    {
-        id: "2",
-        student_id: "2", 
-        title: "AI Chatbot System",
-        description: "Intelligent chatbot using machine learning",
-        status: "active",
-        due_date: "2024-03-30",
-        created_at: "2024-01-20T10:00:00Z"
-    }
-];
-
-let mockSubtasks = [
-    {
-        id: "1",
-        project_id: "1",
-        title: "Database Design",
-        description: "Design and implement the database schema",
-        status: "completed",
-        marks: 8,
-        feedback: "Good database structure, consider adding indexes",
-        due_date: "2024-02-15",
-        created_at: "2024-01-15T10:00:00Z",
-        evaluated_at: "2024-02-16T10:00:00Z"
-    },
-    {
-        id: "2",
-        project_id: "1",
-        title: "Frontend Development",
-        description: "Create React components for product listing",
-        status: "in-progress",
-        marks: null,
-        feedback: null,
-        due_date: "2024-02-28",
-        created_at: "2024-01-20T10:00:00Z"
-    }
-];
-
-// Helper function to get users
-async function getUsers(role = null) {
-    if (dbConnected && supabase) {
-        try {
-            let query = supabase.from('users').select('*');
-            if (role) {
-                query = query.eq('role', role);
-            }
-            const { data, error } = await query;
-            if (!error) return data;
-        } catch (err) {
-            console.log('Database error, using mock data');
+// ✅ Authentication Routes
+app.post('/login', async (req, res) => {
+    try {
+        const { username, password } = req.body;
+        
+        if (!username || !password) {
+            return res.status(400).json({ error: "Username and password are required" });
         }
-    }
-    
-    // Fallback to mock data
-    return role ? mockUsers.filter(u => u.role === role) : mockUsers;
-}
 
-// Helper function to find user by username
-async function findUserByUsername(username) {
-    if (dbConnected && supabase) {
-        try {
+        let user = null;
+
+        // Try Supabase first if connected
+        if (dbConnected && supabase) {
             const { data, error } = await supabase
                 .from('users')
                 .select('*')
                 .eq('username', username)
                 .single();
-            if (!error && data) return data;
-        } catch (err) {
-            console.log('Database error, using mock data');
-        }
-    }
-    
-    // Fallback to mock data
-    return mockUsers.find(u => u.username === username);
-}
-
-// Helper function to create user
-async function createUser(userData) {
-    if (dbConnected && supabase) {
-        try {
-            const { data, error } = await supabase
-                .from('users')
-                .insert([userData])
-                .select('id, username, email, role, student_id, faculty_id, created_at');
-            if (!error) return data[0];
-        } catch (err) {
-            console.log('Database error, using mock data');
-        }
-    }
-    
-    // Fallback to mock data
-    const newUser = {
-        id: (mockUsers.length + 1).toString(),
-        ...userData
-    };
-    mockUsers.push(newUser);
-    const { password: _, ...userWithoutPassword } = newUser;
-    return userWithoutPassword;
-}
-
-// ✅ Signup Route
-app.post("/signup", async (req, res) => {
-    const { username, email, password, role, studentId, facultyId } = req.body;
-
-    // Input validation
-    if (!username || !email || !password) {
-        return res.status(400).json({ 
-            message: "Missing required fields: username, email, and password are required" 
-        });
-    }
-
-    if (password.length < 6) {
-        return res.status(400).json({ 
-            message: "Password must be at least 6 characters long" 
-        });
-    }
-
-    if (!['student', 'faculty'].includes(role)) {
-        return res.status(400).json({ 
-            message: "Invalid role. Must be 'student' or 'faculty'" 
-        });
-    }
-
-    try {
-        // Check if user already exists
-        const existingUser = await findUserByUsername(username);
-        if (existingUser) {
-            return res.status(409).json({ message: "Username already exists" });
-        }
-
-        // Check email in mock data if not using database
-        if (!dbConnected) {
-            const existingEmail = mockUsers.find(u => u.email === email);
-            if (existingEmail) {
-                return res.status(409).json({ message: "Email already exists" });
+            
+            if (!error && data) {
+                user = data;
             }
+        }
+
+        // Fallback to mock data
+        if (!user) {
+            user = mockUsers.find(u => u.username === username);
+        }
+
+        if (!user) {
+            return res.status(401).json({ error: "Invalid credentials" });
+        }
+
+        // Verify password
+        const passwordMatch = await bcrypt.compare(password, user.password);
+        if (!passwordMatch) {
+            return res.status(401).json({ error: "Invalid credentials" });
+        }
+
+        // Remove password from response
+        const { password: _, ...userResponse } = user;
+        
+        res.json({
+            message: "Login successful",
+            user: userResponse,
+            token: "mock-jwt-token" // In production, generate a real JWT
+        });
+    } catch (error) {
+        console.error('Login error:', error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
+
+app.post('/register', async (req, res) => {
+    try {
+        const { username, email, password, role, student_id, faculty_id } = req.body;
+        
+        if (!username || !email || !password || !role) {
+            return res.status(400).json({ error: "All required fields must be provided" });
         }
 
         // Hash password
         const hashedPassword = await bcrypt.hash(password, 12);
-
-        // Create user
-        const userData = {
-            username: username,
-            email: email,
+        
+        const newUser = {
+            username,
+            email,
             password: hashedPassword,
-            role: role || 'student',
-            student_id: studentId || null,
-            faculty_id: facultyId || null
+            role,
+            student_id: role === 'student' ? student_id : null,
+            faculty_id: role === 'faculty' ? faculty_id : null
         };
 
-        const newUser = await createUser(userData);
+        let createdUser = null;
 
-        console.log(`✅ New user registered: ${username} (${role})`);
-        res.json({ 
-            message: "User registered successfully", 
-            user: newUser 
-        });
-    } catch (err) {
-        console.error('Server signup error:', err);
-        res.status(500).json({ 
-            message: "Error registering user", 
-            error: err.message 
-        });
-    }
-});
-
-// ✅ Login Route
-app.post("/login", async (req, res) => {
-    const { username, password } = req.body;
-
-    // Input validation
-    if (!username || !password) {
-        return res.status(400).json({ 
-            message: "Username and password are required" 
-        });
-    }
-
-    try {
-        const user = await findUserByUsername(username);
-        
-        if (!user) {
-            console.error('User not found:', username);
-            return res.status(401).json({ message: "Invalid username or password" });
+        // Try Supabase first if connected
+        if (dbConnected && supabase) {
+            const { data, error } = await supabase
+                .from('users')
+                .insert([newUser])
+                .select()
+                .single();
+            
+            if (!error && data) {
+                createdUser = data;
+            } else if (error) {
+                console.error('Supabase insert error:', error);
+                // Fall through to mock data
+            }
         }
 
-        const isPasswordValid = await bcrypt.compare(password, user.password);
-        if (!isPasswordValid) {
-            console.error('Invalid password for user:', username);
-            return res.status(401).json({ message: "Invalid username or password" });
+        // Fallback to mock data
+        if (!createdUser) {
+            // Check if user already exists in mock data
+            const existingUser = mockUsers.find(u => u.username === username || u.email === email);
+            if (existingUser) {
+                return res.status(409).json({ error: "User already exists" });
+            }
+            
+            createdUser = {
+                id: String(mockUsers.length + 1),
+                ...newUser
+            };
+            mockUsers.push(createdUser);
         }
 
         // Remove password from response
-        const { password: _, ...userWithoutPassword } = user;
-        console.log(`✅ Login successful: ${username} (${userWithoutPassword.role})`);
+        const { password: _, ...userResponse } = createdUser;
         
-        res.json({ 
-            message: "Login successful", 
-            user: userWithoutPassword 
+        res.status(201).json({
+            message: "User created successfully",
+            user: userResponse
         });
-    } catch (err) {
-        console.error('Server login error:', err);
-        res.status(500).json({ 
-            message: "Error during login", 
-            error: err.message 
-        });
+    } catch (error) {
+        console.error('Registration error:', error);
+        res.status(500).json({ error: "Internal server error" });
     }
 });
 
-// ✅ Get all students
-app.get("/api/students", async (req, res) => {
+// ✅ User Routes
+app.get('/users', async (req, res) => {
     try {
-        const students = await getUsers('student');
-        res.json(students);
-    } catch (err) {
-        res.status(500).send("Error fetching students");
-    }
-});
+        let users = [];
 
-// ✅ Get all faculty
-app.get("/api/faculty", async (req, res) => {
-    try {
-        const faculty = await getUsers('faculty');
-        res.json(faculty);
-    } catch (err) {
-        res.status(500).send("Error fetching faculty");
-    }
-});
-
-// ✅ Get projects for a student
-app.get("/api/student/:studentId/projects", async (req, res) => {
-    try {
-        const { studentId } = req.params;
-        
+        // Try Supabase first if connected
         if (dbConnected && supabase) {
-            try {
-                const { data, error } = await supabase
-                    .from('projects')
-                    .select('*')
-                    .eq('student_id', studentId);
-
-                if (!error) {
-                    res.json(data);
-                    return;
-                }
-            } catch (err) {
-                console.log('Database error, using mock data');
+            const { data, error } = await supabase
+                .from('users')
+                .select('id, username, email, role, student_id, faculty_id'); // Exclude password
+            
+            if (!error && data) {
+                users = data;
             }
         }
 
         // Fallback to mock data
-        const projects = mockProjects.filter(p => p.student_id === studentId);
-        res.json(projects);
-    } catch (err) {
-        res.status(500).send("Error fetching projects");
+        if (users.length === 0) {
+            users = mockUsers.map(({ password, ...user }) => user); // Remove passwords
+        }
+
+        res.json(users);
+    } catch (error) {
+        console.error('Get users error:', error);
+        res.status(500).json({ error: "Internal server error" });
     }
 });
 
-// ✅ Get all projects (for faculty)
-app.get("/api/projects", async (req, res) => {
-    try {
-        if (dbConnected && supabase) {
-            try {
-                const { data, error } = await supabase
-                    .from('projects')
-                    .select(`
-                        *,
-                        users!projects_student_id_fkey(username, student_id)
-                    `);
+// ✅ Static file serving (optional)
+app.use(express.static('public'));
 
-                if (!error) {
-                    res.json(data);
-                    return;
-                }
-            } catch (err) {
-                console.log('Database error, using mock data');
-            }
-        }
-
-        // Fallback to mock data
-        const projectsWithUsers = mockProjects.map(project => {
-            const user = mockUsers.find(u => u.id === project.student_id);
-            return {
-                ...project,
-                users: user ? { username: user.username, student_id: user.student_id } : null
-            };
-        });
-        res.json(projectsWithUsers);
-    } catch (err) {
-        res.status(500).send("Error fetching projects");
-    }
+// Error handling middleware
+app.use((err, req, res, next) => {
+    console.error('Unhandled error:', err);
+    res.status(500).json({ error: 'Internal server error' });
 });
 
-// ✅ Get subtasks for a project
-app.get("/api/project/:projectId/subtasks", async (req, res) => {
-    try {
-        const { projectId } = req.params;
-        
-        if (dbConnected && supabase) {
-            try {
-                const { data, error } = await supabase
-                    .from('subtasks')
-                    .select('*')
-                    .eq('project_id', projectId)
-                    .order('created_at', { ascending: false });
-
-                if (!error) {
-                    res.json(data);
-                    return;
-                }
-            } catch (err) {
-                console.log('Database error, using mock data');
-            }
-        }
-
-        // Fallback to mock data
-        const subtasks = mockSubtasks.filter(s => s.project_id === projectId);
-        res.json(subtasks);
-    } catch (err) {
-        res.status(500).send("Error fetching subtasks");
-    }
+// 404 handler
+app.use((req, res) => {
+    res.status(404).json({ error: 'Route not found' });
 });
-
-// ✅ Add subtask (student)
-app.post("/api/subtask", async (req, res) => {
-    try {
-        const { project_id, title, description, due_date } = req.body;
-        
-        if (dbConnected && supabase) {
-            try {
-                const { data, error } = await supabase
-                    .from('subtasks')
-                    .insert([
-                        {
-                            project_id,
-                            title,
-                            description,
-                            due_date,
-                            status: 'pending',
-                            created_at: new Date().toISOString()
-                        }
-                    ])
-                    .select();
-
-                if (!error) {
-                    res.json({ message: "Subtask added successfully", data: data[0] });
-                    return;
-                }
-            } catch (err) {
-                console.log('Database error, using mock data');
-            }
-        }
-
-        // Fallback to mock data
-        const newSubtask = {
-            id: (mockSubtasks.length + 1).toString(),
-            project_id,
-            title,
-            description,
-            status: 'pending',
-            marks: null,
-            feedback: null,
-            due_date,
-            created_at: new Date().toISOString()
-        };
-
-        mockSubtasks.push(newSubtask);
-        res.json({ message: "Subtask added successfully", data: newSubtask });
-    } catch (err) {
-        res.status(500).send("Error adding subtask");
-    }
-});
-
-// ✅ Update subtask marks and feedback (faculty)
-app.put("/api/subtask/:subtaskId/evaluate", async (req, res) => {
-    try {
-        const { subtaskId } = req.params;
-        const { marks, feedback, status } = req.body;
-        
-        if (dbConnected && supabase) {
-            try {
-                const { data, error } = await supabase
-                    .from('subtasks')
-                    .update({
-                        marks: marks,
-                        feedback: feedback,
-                        status: status,
-                        evaluated_at: new Date().toISOString()
-                    })
-                    .eq('id', subtaskId)
-                    .select();
-
-                if (!error) {
-                    res.json({ message: "Subtask evaluated successfully", data: data[0] });
-                    return;
-                }
-            } catch (err) {
-                console.log('Database error, using mock data');
-            }
-        }
-
-        // Fallback to mock data
-        const subtask = mockSubtasks.find(s => s.id === subtaskId);
-        if (subtask) {
-            subtask.marks = marks;
-            subtask.feedback = feedback;
-            subtask.status = status;
-            subtask.evaluated_at = new Date().toISOString();
-            res.json({ message: "Subtask evaluated successfully", data: subtask });
-        } else {
-            res.status(404).json({ message: "Subtask not found" });
-        }
-    } catch (err) {
-        res.status(500).send("Error updating subtask");
-    }
-});
-
-// ✅ Create project
-app.post("/api/project", async (req, res) => {
-    try {
-        const { student_id, title, description, due_date } = req.body;
-        
-        if (dbConnected && supabase) {
-            try {
-                const { data, error } = await supabase
-                    .from('projects')
-                    .insert([
-                        {
-                            student_id,
-                            title,
-                            description,
-                            due_date,
-                            status: 'active',
-                            created_at: new Date().toISOString()
-                        }
-                    ])
-                    .select();
-
-                if (!error) {
-                    res.json({ message: "Project created successfully", data: data[0] });
-                    return;
-                }
-            } catch (err) {
-                console.log('Database error, using mock data');
-            }
-        }
-
-        // Fallback to mock data
-        const newProject = {
-            id: (mockProjects.length + 1).toString(),
-            student_id,
-            title,
-            description,
-            status: 'active',
-            due_date,
-            created_at: new Date().toISOString()
-        };
-
-        mockProjects.push(newProject);
-        res.json({ message: "Project created successfully", data: newProject });
-    } catch (err) {
-        res.status(500).json({ message: "Error creating project", error: err.message });
-    }
-});
-
-// ✅ Assign project to student (faculty only)
-app.post("/api/assign-project", async (req, res) => {
-    try {
-        const { student_id, title, description, due_date, faculty_id } = req.body;
-        
-        if (dbConnected && supabase) {
-            try {
-                // Verify faculty exists
-                const { data: faculty, error: facultyError } = await supabase
-                    .from('users')
-                    .select('id')
-                    .eq('id', faculty_id)
-                    .eq('role', 'faculty')
-                    .single();
-
-                if (facultyError || !faculty) {
-                    return res.status(403).json({ message: "Invalid faculty ID" });
-                }
-
-                // Verify student exists
-                const { data: student, error: studentError } = await supabase
-                    .from('users')
-                    .select('id, username')
-                    .eq('id', student_id)
-                    .eq('role', 'student')
-                    .single();
-
-                if (studentError || !student) {
-                    return res.status(404).json({ message: "Student not found" });
-                }
-
-                // Create project
-                const { data, error } = await supabase
-                    .from('projects')
-                    .insert([
-                        {
-                            student_id,
-                            title,
-                            description,
-                            due_date,
-                            status: 'active',
-                            created_at: new Date().toISOString()
-                        }
-                    ])
-                    .select();
-
-                if (!error) {
-                    res.json({ 
-                        message: `Project assigned to ${student.username} successfully`, 
-                        data: data[0] 
-                    });
-                    return;
-                }
-            } catch (err) {
-                console.log('Database error, using mock data');
-            }
-        }
-
-        // Fallback to mock data
-        const newProject = {
-            id: (mockProjects.length + 1).toString(),
-            student_id,
-            title,
-            description,
-            status: 'active',
-            due_date,
-            created_at: new Date().toISOString()
-        };
-
-        mockProjects.push(newProject);
-        res.json({ message: "Project assigned successfully", data: newProject });
-    } catch (err) {
-        res.status(500).json({ message: "Error assigning project", error: err.message });
-    }
-});
-
-// ✅ Update project status
-app.put("/api/project/:projectId/status", async (req, res) => {
-    try {
-        const { projectId } = req.params;
-        const { status } = req.body;
-        
-        if (dbConnected && supabase) {
-            try {
-                const { data, error } = await supabase
-                    .from('projects')
-                    .update({ 
-                        status: status,
-                        updated_at: new Date().toISOString()
-                    })
-                    .eq('id', projectId)
-                    .select();
-
-                if (!error) {
-                    res.json({ message: "Project status updated successfully", data: data[0] });
-                    return;
-                }
-            } catch (err) {
-                console.log('Database error, using mock data');
-            }
-        }
-
-        // Fallback to mock data
-        const project = mockProjects.find(p => p.id === projectId);
-        if (project) {
-            project.status = status;
-            project.updated_at = new Date().toISOString();
-            res.json({ message: "Project status updated successfully", data: project });
-        } else {
-            res.status(404).json({ message: "Project not found" });
-        }
-    } catch (err) {
-        res.status(500).json({ message: "Error updating project status", error: err.message });
-    }
-});
-
-// ✅ Get project progress summary
-app.get("/api/project/:projectId/progress", async (req, res) => {
-    try {
-        const { projectId } = req.params;
-        
-        if (dbConnected && supabase) {
-            try {
-                const { data, error } = await supabase
-                    .from('subtasks')
-                    .select('*')
-                    .eq('project_id', projectId);
-
-                if (!error) {
-                    const totalSubtasks = data.length;
-                    const completedSubtasks = data.filter(s => s.status === 'completed').length;
-                    const progressPercentage = totalSubtasks > 0 ? Math.round((completedSubtasks / totalSubtasks) * 100) : 0;
-                    const averageMarks = data.filter(s => s.marks !== null).reduce((sum, s) => sum + s.marks, 0) / data.filter(s => s.marks !== null).length || 0;
-
-                    res.json({
-                        totalSubtasks,
-                        completedSubtasks,
-                        progressPercentage,
-                        averageMarks: Math.round(averageMarks * 100) / 100,
-                        subtasks: data
-                    });
-                    return;
-                }
-            } catch (err) {
-                console.log('Database error, using mock data');
-            }
-        }
-
-        // Fallback to mock data
-        const subtasks = mockSubtasks.filter(s => s.project_id === projectId);
-        const totalSubtasks = subtasks.length;
-        const completedSubtasks = subtasks.filter(s => s.status === 'completed').length;
-        const progressPercentage = totalSubtasks > 0 ? Math.round((completedSubtasks / totalSubtasks) * 100) : 0;
-        const averageMarks = subtasks.filter(s => s.marks !== null).reduce((sum, s) => sum + s.marks, 0) / subtasks.filter(s => s.marks !== null).length || 0;
-
-        res.json({
-            totalSubtasks,
-            completedSubtasks,
-            progressPercentage,
-            averageMarks: Math.round(averageMarks * 100) / 100,
-            subtasks: subtasks
-        });
-    } catch (err) {
-        res.status(500).json({ message: "Error fetching progress", error: err.message });
-    }
-});
-
-// Serve static files from the current directory (after API routes)
-app.use(express.static('.'));
 
 // Start Server
-app.listen(config.server.port, () => {
-    console.log("🚀 Progresso Server running on http://localhost:" + config.server.port);
+const PORT = config.server.port;
+app.listen(PORT, () => {
+    console.log("🚀 Progresso Server running on http://localhost:" + PORT);
     console.log("📝 Environment:", config.server.environment);
-    console.log("🔗 Supabase URL:", config.supabase.url);
+    console.log("🔗 Supabase URL:", config.supabase.url || "Not configured");
     console.log("💾 Database Status:", dbConnected ? "✅ Connected" : "⚠️  Using Mock Data");
-    console.log("💡 Test the application: http://localhost:" + config.server.port + "/auth.html");
     
     if (!dbConnected) {
         console.log("\n📋 To connect to Supabase:");
-        console.log("1. Go to: https://supabase.com/dashboard/project/nkaafhuafausmcvzeanw/sql");
-        console.log("2. Run the supabase-schema.sql script");
+        console.log("1. Create a .env file with:");
+        console.log("   SUPABASE_URL=your_supabase_url");
+        console.log("   SUPABASE_ANON_KEY=your_supabase_anon_key");
+        console.log("2. Create users table in your Supabase dashboard");
         console.log("3. Restart the server");
     }
     
@@ -736,4 +282,11 @@ app.listen(config.server.port, () => {
     console.log("   Student: john_doe / password123");
     console.log("   Student: jane_smith / password123");
     console.log("   Faculty: prof_wilson / password123");
+    
+    console.log("\n🔧 API Endpoints:");
+    console.log("   POST /login - User login");
+    console.log("   POST /register - User registration");
+    console.log("   GET /users - Get all users");
+    console.log("   GET /health - Server health check");
+    console.log("   GET /db-status - Database connection status");
 });
