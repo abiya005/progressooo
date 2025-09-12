@@ -31,9 +31,12 @@ let dbConnected = false;
 async function initializeSupabase() {
     try {
         if (!config.supabase.url || !config.supabase.anonKey) {
-            throw new Error('Missing Supabase configuration. Check your .env file.');
+            console.log("⚠️  Missing Supabase configuration. Using mock data only.");
+            dbConnected = false;
+            return false;
         }
 
+        console.log("🔄 Connecting to Supabase...");
         supabase = createClient(config.supabase.url, config.supabase.anonKey);
         
         // Test connection with a simple query
@@ -46,6 +49,7 @@ async function initializeSupabase() {
             dbConnected = true;
             console.log("✅ Connected to Supabase Database successfully!");
             console.log(`📊 Database URL: ${config.supabase.url}`);
+            return true;
         } else {
             console.log("⚠️  Supabase connection failed:", error.message);
             if (error.message.includes('relation "users" does not exist')) {
@@ -53,15 +57,40 @@ async function initializeSupabase() {
                 console.log("💡 Run the supabase-schema.sql script in your Supabase dashboard");
             }
             dbConnected = false;
+            return false;
         }
     } catch (err) {
         console.log("⚠️  Supabase connection failed:", err.message);
+        console.log("📊 Continuing with mock data...");
         dbConnected = false;
+        return false;
     }
 }
 
-// Initialize connection
-initializeSupabase();
+// Initialize connection and wait for it to complete
+let supabaseInitialized = false;
+
+// Handle uncaught exceptions and unhandled rejections
+process.on('uncaughtException', (error) => {
+    console.error('Uncaught Exception:', error);
+    // Don't exit the process, just log the error
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+    // Don't exit the process, just log the error
+});
+
+// Keep the process alive
+process.on('SIGINT', () => {
+    console.log('\n🛑 Server shutting down gracefully...');
+    process.exit(0);
+});
+
+process.on('SIGTERM', () => {
+    console.log('\n🛑 Server shutting down gracefully...');
+    process.exit(0);
+});
 
 // Health and status endpoints
 app.get('/health', (req, res) => {
@@ -78,7 +107,7 @@ let mockUsers = [
         id: "1",
         username: "john_doe",
         email: "john.doe@example.com",
-        password: "$2b$12$pr0iXv8nrJs.hy.VIBupNOQNqHAwrCNiisYInIzBDo.n6LaP1ceb6", // password123
+        password: "$2b$12$k.kqyVyIB1raGayJxSEDAOV/O8vgy9uYPQr5jobP.HDENARO6yKUW", // password123
         role: "student",
         student_id: "STU001"
     },
@@ -86,7 +115,7 @@ let mockUsers = [
         id: "2", 
         username: "jane_smith",
         email: "jane.smith@example.com",
-        password: "$2b$12$pr0iXv8nrJs.hy.VIBupNOQNqHAwrCNiisYInIzBDo.n6LaP1ceb6", // password123
+        password: "$2b$12$k.kqyVyIB1raGayJxSEDAOV/O8vgy9uYPQr5jobP.HDENARO6yKUW", // password123
         role: "student",
         student_id: "STU002"
     },
@@ -94,7 +123,7 @@ let mockUsers = [
         id: "3",
         username: "prof_wilson",
         email: "prof.wilson@university.edu",
-        password: "$2b$12$pr0iXv8nrJs.hy.VIBupNOQNqHAwrCNiisYInIzBDo.n6LaP1ceb6", // password123
+        password: "$2b$12$k.kqyVyIB1raGayJxSEDAOV/O8vgy9uYPQr5jobP.HDENARO6yKUW", // password123
         role: "faculty",
         faculty_id: "FAC001"
     }
@@ -106,13 +135,17 @@ app.post('/login', async (req, res) => {
         const { username, password } = req.body;
         
         if (!username || !password) {
-            return res.status(400).json({ error: "Username and password are required" });
+            return res.status(400).json({ message: "Username and password are required" });
         }
 
         let user = null;
 
-        // Try Supabase first if connected
-        if (dbConnected && supabase) {
+        // Check mock data first for test users
+        const mockUser = mockUsers.find(u => u.username === username);
+        if (mockUser) {
+            user = mockUser;
+        } else if (dbConnected && supabase) {
+            // Try Supabase for other users
             const { data, error } = await supabase
                 .from('users')
                 .select('*')
@@ -124,19 +157,14 @@ app.post('/login', async (req, res) => {
             }
         }
 
-        // Fallback to mock data
         if (!user) {
-            user = mockUsers.find(u => u.username === username);
-        }
-
-        if (!user) {
-            return res.status(401).json({ error: "Invalid credentials" });
+            return res.status(401).json({ message: "Invalid credentials" });
         }
 
         // Verify password
         const passwordMatch = await bcrypt.compare(password, user.password);
         if (!passwordMatch) {
-            return res.status(401).json({ error: "Invalid credentials" });
+            return res.status(401).json({ message: "Invalid credentials" });
         }
 
         // Remove password from response
@@ -149,10 +177,11 @@ app.post('/login', async (req, res) => {
         });
     } catch (error) {
         console.error('Login error:', error);
-        res.status(500).json({ error: "Internal server error" });
+        res.status(500).json({ message: "Internal server error" });
     }
 });
 
+// Registration endpoint (alias for signup)
 app.post('/register', async (req, res) => {
     try {
         const { username, email, password, role, student_id, faculty_id } = req.body;
@@ -219,6 +248,73 @@ app.post('/register', async (req, res) => {
     }
 });
 
+// Signup endpoint (same as register)
+app.post('/signup', async (req, res) => {
+    try {
+        const { username, email, password, role, studentId, facultyId } = req.body;
+        
+        if (!username || !email || !password || !role) {
+            return res.status(400).json({ message: "All required fields must be provided" });
+        }
+
+        // Hash password
+        const hashedPassword = await bcrypt.hash(password, 12);
+        
+        const newUser = {
+            username,
+            email,
+            password: hashedPassword,
+            role,
+            student_id: role === 'student' ? studentId : null,
+            faculty_id: role === 'faculty' ? facultyId : null
+        };
+
+        let createdUser = null;
+
+        // Try Supabase first if connected
+        if (dbConnected && supabase) {
+            const { data, error } = await supabase
+                .from('users')
+                .insert([newUser])
+                .select()
+                .single();
+            
+            if (!error && data) {
+                createdUser = data;
+            } else if (error) {
+                console.error('Supabase insert error:', error);
+                // Fall through to mock data
+            }
+        }
+
+        // Fallback to mock data
+        if (!createdUser) {
+            // Check if user already exists in mock data
+            const existingUser = mockUsers.find(u => u.username === username || u.email === email);
+            if (existingUser) {
+                return res.status(409).json({ message: "User already exists" });
+            }
+            
+            createdUser = {
+                id: String(mockUsers.length + 1),
+                ...newUser
+            };
+            mockUsers.push(createdUser);
+        }
+
+        // Remove password from response
+        const { password: _, ...userResponse } = createdUser;
+        
+        res.status(201).json({
+            message: "Account created successfully! Please login.",
+            user: userResponse
+        });
+    } catch (error) {
+        console.error('Signup error:', error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+});
+
 // ✅ User Routes
 app.get('/users', async (req, res) => {
     try {
@@ -247,8 +343,13 @@ app.get('/users', async (req, res) => {
     }
 });
 
-// ✅ Static file serving (optional)
-app.use(express.static('public'));
+// ✅ Static file serving - serve HTML files from root directory
+app.use(express.static('.'));
+
+// Default route - redirect to auth page
+app.get('/', (req, res) => {
+    res.redirect('/auth.html');
+});
 
 // Error handling middleware
 app.use((err, req, res, next) => {
@@ -263,22 +364,27 @@ app.use((req, res) => {
 
 // Start Server
 const PORT = config.server.port;
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
     console.log("🚀 Progresso Server running on http://localhost:" + PORT);
     console.log("📝 Environment:", config.server.environment);
     console.log("🔗 Supabase URL:", config.supabase.url || "Not configured");
-    console.log("💾 Database Status:", dbConnected ? "✅ Connected" : "⚠️  Using Mock Data");
     
-    if (!dbConnected) {
+    // Initialize Supabase connection
+    console.log("🔄 Initializing database connection...");
+    const connected = await initializeSupabase();
+    
+    console.log("💾 Database Status:", connected ? "✅ Connected to Supabase" : "⚠️  Using Mock Data");
+    
+    if (!connected) {
         console.log("\n📋 To connect to Supabase:");
-        console.log("1. Create a .env file with:");
-        console.log("   SUPABASE_URL=your_supabase_url");
-        console.log("   SUPABASE_ANON_KEY=your_supabase_anon_key");
+        console.log("1. Ensure your .env file has:");
+        console.log("   SUPABASE_URL=https://nkaafhuafausmcvzeanw.supabase.co");
+        console.log("   SUPABASE_ANON_KEY=your_anon_key");
         console.log("2. Create users table in your Supabase dashboard");
         console.log("3. Restart the server");
     }
     
-    console.log("\n📝 Test Credentials (Mock Data):");
+    console.log("\n📝 Test Credentials:");
     console.log("   Student: john_doe / password123");
     console.log("   Student: jane_smith / password123");
     console.log("   Faculty: prof_wilson / password123");
@@ -286,7 +392,16 @@ app.listen(PORT, () => {
     console.log("\n🔧 API Endpoints:");
     console.log("   POST /login - User login");
     console.log("   POST /register - User registration");
+    console.log("   POST /signup - User signup");
     console.log("   GET /users - Get all users");
     console.log("   GET /health - Server health check");
     console.log("   GET /db-status - Database connection status");
+    
+    console.log("\n🔄 Server is running and ready to accept requests...");
+    console.log("   Press Ctrl+C to stop the server");
 });
+
+// Keep the process alive
+setInterval(() => {
+    // This keeps the event loop alive
+}, 1000);
