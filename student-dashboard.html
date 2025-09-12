@@ -830,7 +830,7 @@
                                 </div>
                                 ${subtask.feedback ? `<div class="subtask-feedback">${subtask.feedback}</div>` : ''}
                                 <div style="margin-top: 8px;">
-                                    <button class="btn-add-subtask" onclick="openUpdateProgressModal('${subtask.id}', '${subtask.title}', '${subtask.status}', '${subtask.description || ''}')" style="font-size: 12px; padding: 6px 12px;">
+                                    <button class="btn-add-subtask" onclick="openUpdateProgressModal('${subtask.id}', '${subtask.title.replace(/'/g, "\\'")}', '${subtask.status}', '${(subtask.description || '').replace(/'/g, "\\'")}')" style="font-size: 12px; padding: 6px 12px;">
                                         Update Progress
                                     </button>
                                 </div>
@@ -889,7 +889,7 @@
                                 </div>
                                 ${subtask.feedback ? `<div class="subtask-feedback">${subtask.feedback}</div>` : ''}
                                 <div style="margin-top: 8px;">
-                                    <button class="btn-add-subtask" onclick="openUpdateProgressModal('${subtask.id}', '${subtask.title}', '${subtask.status}', '${subtask.description || ''}')" style="font-size: 12px; padding: 6px 12px;">
+                                    <button class="btn-add-subtask" onclick="openUpdateProgressModal('${subtask.id}', '${subtask.title.replace(/'/g, "\\'")}', '${subtask.status}', '${(subtask.description || '').replace(/'/g, "\\'")}')" style="font-size: 12px; padding: 6px 12px;">
                                         Update Progress
                                     </button>
                                 </div>
@@ -1145,7 +1145,7 @@
                                 </div>
                                 ${subtask.feedback ? `<div class="subtask-feedback">${subtask.feedback}</div>` : ''}
                                 <div style="margin-top: 8px;">
-                                    <button class="btn-add-subtask" onclick="openUpdateProgressModal('${subtask.id}', '${subtask.title}', '${subtask.status}', '${subtask.description || ''}')" style="font-size: 12px; padding: 6px 12px;">
+                                    <button class="btn-add-subtask" onclick="openUpdateProgressModal('${subtask.id}', '${subtask.title.replace(/'/g, "\\'")}', '${subtask.status}', '${(subtask.description || '').replace(/'/g, "\\'")}')" style="font-size: 12px; padding: 6px 12px;">
                                         Update Progress
                                     </button>
                                 </div>

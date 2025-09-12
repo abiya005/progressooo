@@ -343,6 +343,329 @@ app.get('/users', async (req, res) => {
     }
 });
 
+// ✅ API Routes for Dashboard functionality
+
+// Get all students (for faculty dashboard)
+app.get('/api/students', async (req, res) => {
+    try {
+        if (supabase) {
+            const { data, error } = await supabase
+                .from('users')
+                .select('*')
+                .eq('role', 'student')
+                .order('created_at', { ascending: false });
+            
+            if (error) throw error;
+            res.json(data || []);
+        } else {
+            // Mock data for students
+            const mockStudents = [
+                { id: '1', username: 'john_doe', email: 'john.doe@example.com', role: 'student', student_id: 'STU001' },
+                { id: '2', username: 'jane_smith', email: 'jane.smith@example.com', role: 'student', student_id: 'STU002' },
+                { id: '3', username: 'mike_johnson', email: 'mike.johnson@example.com', role: 'student', student_id: 'STU003' }
+            ];
+            res.json(mockStudents);
+        }
+    } catch (error) {
+        console.error('Get students error:', error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
+
+// Get all projects (for faculty dashboard)
+app.get('/api/projects', async (req, res) => {
+    try {
+        if (supabase) {
+            const { data, error } = await supabase
+                .from('projects')
+                .select(`
+                    *,
+                    users:student_id (
+                        id,
+                        username,
+                        student_id,
+                        email
+                    )
+                `)
+                .order('created_at', { ascending: false });
+            
+            if (error) throw error;
+            res.json(data || []);
+        } else {
+            // Mock data for projects
+            const mockProjects = [
+                { 
+                    id: '1', 
+                    title: 'E-Commerce Website', 
+                    description: 'A full-stack e-commerce platform', 
+                    status: 'active', 
+                    due_date: '2024-03-15',
+                    student_id: '1',
+                    users: { username: 'john_doe', student_id: 'STU001' }
+                },
+                { 
+                    id: '2', 
+                    title: 'Mobile Banking App', 
+                    description: 'Cross-platform mobile banking app', 
+                    status: 'active', 
+                    due_date: '2024-04-20',
+                    student_id: '2',
+                    users: { username: 'jane_smith', student_id: 'STU002' }
+                }
+            ];
+            res.json(mockProjects);
+        }
+    } catch (error) {
+        console.error('Get projects error:', error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
+
+// Get projects for a specific student
+app.get('/api/student/:studentId/projects', async (req, res) => {
+    try {
+        const { studentId } = req.params;
+        
+        if (supabase) {
+            const { data, error } = await supabase
+                .from('projects')
+                .select('*')
+                .eq('student_id', studentId)
+                .order('created_at', { ascending: false });
+            
+            if (error) throw error;
+            res.json(data || []);
+        } else {
+            // Mock data for student projects
+            const mockProjects = [
+                { 
+                    id: '1', 
+                    title: 'E-Commerce Website', 
+                    description: 'A full-stack e-commerce platform', 
+                    status: 'active', 
+                    due_date: '2024-03-15',
+                    student_id: studentId
+                },
+                { 
+                    id: '2', 
+                    title: 'Mobile Banking App', 
+                    description: 'Cross-platform mobile banking app', 
+                    status: 'active', 
+                    due_date: '2024-04-20',
+                    student_id: studentId
+                }
+            ];
+            res.json(mockProjects);
+        }
+    } catch (error) {
+        console.error('Get student projects error:', error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
+
+// Get subtasks for a specific project
+app.get('/api/project/:projectId/subtasks', async (req, res) => {
+    try {
+        const { projectId } = req.params;
+        console.log('Getting subtasks for project:', projectId);
+        
+        if (supabase) {
+            const { data, error } = await supabase
+                .from('subtasks')
+                .select('*')
+                .eq('project_id', projectId)
+                .order('created_at', { ascending: false });
+            
+            if (error) {
+                console.error('Supabase error:', error);
+                throw error;
+            }
+            console.log('Found subtasks:', data?.length || 0);
+            res.json(data || []);
+        } else {
+            // Mock data for subtasks
+            const mockSubtasks = [
+                { 
+                    id: '1', 
+                    title: 'Database Design', 
+                    description: 'Design and implement the database schema', 
+                    status: 'completed', 
+                    marks: 8, 
+                    feedback: 'Good database structure, consider adding indexes',
+                    due_date: '2024-02-15',
+                    project_id: projectId,
+                    evaluated_at: '2024-02-16T10:00:00Z'
+                },
+                { 
+                    id: '2', 
+                    title: 'Frontend Development', 
+                    description: 'Create React components for product listing', 
+                    status: 'in-progress', 
+                    marks: null, 
+                    feedback: null,
+                    due_date: '2024-02-28',
+                    project_id: projectId
+                },
+                { 
+                    id: '3', 
+                    title: 'Payment Integration', 
+                    description: 'Integrate Stripe payment gateway', 
+                    status: 'pending', 
+                    marks: null, 
+                    feedback: null,
+                    due_date: '2024-03-10',
+                    project_id: projectId
+                }
+            ];
+            console.log('Returning mock subtasks:', mockSubtasks.length);
+            res.json(mockSubtasks);
+        }
+    } catch (error) {
+        console.error('Get project subtasks error:', error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
+
+// Assign a new project to a student
+app.post('/api/assign-project', async (req, res) => {
+    try {
+        const { student_id, title, description, due_date, faculty_id } = req.body;
+        
+        if (supabase) {
+            const { data, error } = await supabase
+                .from('projects')
+                .insert([{
+                    student_id,
+                    title,
+                    description,
+                    due_date,
+                    status: 'active'
+                }])
+                .select()
+                .single();
+            
+            if (error) throw error;
+            res.status(201).json({ message: "Project assigned successfully!", project: data });
+        } else {
+            // Mock response
+            const mockProject = {
+                id: Date.now().toString(),
+                student_id,
+                title,
+                description,
+                due_date,
+                status: 'active',
+                created_at: new Date().toISOString()
+            };
+            res.status(201).json({ message: "Project assigned successfully!", project: mockProject });
+        }
+    } catch (error) {
+        console.error('Assign project error:', error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
+
+// Add a new subtask to a project
+app.post('/api/subtask', async (req, res) => {
+    try {
+        const { project_id, title, description, due_date } = req.body;
+        
+        if (supabase) {
+            const { data, error } = await supabase
+                .from('subtasks')
+                .insert([{
+                    project_id,
+                    title,
+                    description,
+                    due_date,
+                    status: 'pending'
+                }])
+                .select()
+                .single();
+            
+            if (error) throw error;
+            res.status(201).json({ message: "Subtask added successfully!", subtask: data });
+        } else {
+            // Mock response
+            const mockSubtask = {
+                id: Date.now().toString(),
+                project_id,
+                title,
+                description,
+                due_date,
+                status: 'pending',
+                created_at: new Date().toISOString()
+            };
+            res.status(201).json({ message: "Subtask added successfully!", subtask: mockSubtask });
+        }
+    } catch (error) {
+        console.error('Add subtask error:', error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
+
+// Update subtask status (for students)
+app.put('/api/subtask/:subtaskId/status', async (req, res) => {
+    try {
+        const { subtaskId } = req.params;
+        const { status, description } = req.body;
+        
+        if (supabase) {
+            const { data, error } = await supabase
+                .from('subtasks')
+                .update({ 
+                    status,
+                    description: description || null,
+                    updated_at: new Date().toISOString()
+                })
+                .eq('id', subtaskId)
+                .select()
+                .single();
+            
+            if (error) throw error;
+            res.json({ message: "Subtask status updated successfully!", subtask: data });
+        } else {
+            // Mock response
+            res.json({ message: "Subtask status updated successfully!" });
+        }
+    } catch (error) {
+        console.error('Update subtask status error:', error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
+
+// Evaluate a subtask (for faculty)
+app.put('/api/subtask/:subtaskId/evaluate', async (req, res) => {
+    try {
+        const { subtaskId } = req.params;
+        const { marks, feedback, status } = req.body;
+        
+        if (supabase) {
+            const { data, error } = await supabase
+                .from('subtasks')
+                .update({ 
+                    marks,
+                    feedback,
+                    status,
+                    evaluated_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString()
+                })
+                .eq('id', subtaskId)
+                .select()
+                .single();
+            
+            if (error) throw error;
+            res.json({ message: "Evaluation submitted successfully!", subtask: data });
+        } else {
+            // Mock response
+            res.json({ message: "Evaluation submitted successfully!" });
+        }
+    } catch (error) {
+        console.error('Evaluate subtask error:', error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
+
 // ✅ Static file serving - serve HTML files from root directory
 app.use(express.static('.'));
 
