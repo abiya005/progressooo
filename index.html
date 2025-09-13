@@ -84,6 +84,69 @@
             margin-right: 10px;
             width: 20px;
         }
+
+        .team-section {
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 2px solid #ebd8d0;
+        }
+
+        .team-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #582c4d;
+            margin-bottom: 20px;
+        }
+
+        .team-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            text-align: left;
+        }
+
+        .team-member {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #582c4d;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .team-member:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .member-name {
+            font-weight: 600;
+            color: #582c4d;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .member-id {
+            font-size: 12px;
+            color: #666;
+            font-family: 'Courier New', monospace;
+        }
+
+        .developed-by {
+            margin-top: 15px;
+            font-size: 14px;
+            color: #888;
+            font-style: italic;
+        }
+
+        @media (max-width: 480px) {
+            .team-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .welcome-container {
+                padding: 30px 20px;
+            }
+        }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
@@ -116,6 +179,35 @@
                 <i class="fas fa-chart-line"></i>
                 <span>Analytics & Performance Insights</span>
             </div>
+        </div>
+
+        <div class="team-section">
+            <div class="team-title">
+                <i class="fas fa-code"></i> Development Team
+            </div>
+            <div class="team-grid">
+                <div class="team-member">
+                    <div class="member-name">ABIYA BIJU</div>
+                    <div class="member-id">2360307</div>
+                </div>
+                <div class="team-member">
+                    <div class="member-name">GAYATHRI MP</div>
+                    <div class="member-id">2360370</div>
+                </div>
+                <div class="team-member">
+                    <div class="member-name">KADIVETI BHAVANESH</div>
+                    <div class="member-id">2360393</div>
+                </div>
+                <div class="team-member">
+                    <div class="member-name">S ABHINAV</div>
+                    <div class="member-id">2360454</div>
+                </div>
+                <div class="team-member">
+                    <div class="member-name">ALAN CHRIS DSILVA</div>
+                    <div class="member-id">2360322</div>
+                </div>
+            </div>
+            
         </div>
     </div>
 
